@@ -1,5 +1,5 @@
 #' Select by name or expression for each member of a list
-#' @param x The list
+#' @param .data \code{list}
 #' @param ... The members to select
 #' @name list.select
 #' @export
@@ -13,33 +13,13 @@
 #' list.select(x,type,score)
 #' list.select(x,type,score.range=range(unlist(score)))
 #' }
-list.select <- function(x,...) {
+list.select <- function(.data,...) {
   args <- as.list(match.call(expand.dots = FALSE))$`...`
   argnames <- names(args)
-  if(is.null(argnames)) {
-    argnames <- character(length(args))
-  }
-  indices <- argnames=="" & vapply(args,is.name,logical(1))
-  argnames[indices] <- vapply(args[indices],as.character,character(1))
+  if(is.null(argnames))  argnames <- character(length(args))
+  indices <- argnames=="" & vapply(args,is.name,logical(1L))
+  argnames[indices] <- vapply(args[indices],as.character,character(1L))
   names(args) <- argnames
-  for(i in seq_along(args)) {
-    arg <- args[[i]]
-    arg <- substitute(arg)
-    args[[i]] <- lambda(arg)
-  }
-  enclos <- new.env(FALSE,parent.frame(),1)
-  items <- lapply(x,function(xi) {
-    if(is.list(xi) || is.environment(xi)) {
-      env <- xi
-    } else if(is.vector(xi)) {
-      env <- as.list(xi)
-    } else {
-      env <- enclos
-    }
-    lapply(args,function(arg) {
-      assign(arg$symbol,xi,envir = enclos)
-      eval(arg$expr,env,enclos)
-    })
-  })
-  items
+  items <- lapply(args,list.map.internal,.data=.data,envir=parent.frame())
+  do.call(Map,c(function(.,...) list(...),list(.data),items))
 }

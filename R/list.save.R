@@ -7,6 +7,7 @@
 #' @param ... Additional parameters passed to the output function
 #' @name list.save
 #' @export
+#' @return \code{x} will be returned.
 #' @examples
 #' \dontrun{
 #' x <- lapply(1:5,function(i) data.frame(a=i,b=i^2))
@@ -22,6 +23,7 @@ list.save <- function(x,file,type=tolower(tools::file_ext(file)),...) {
   } else {
     list.save.rdata(x,file,...)
   }
+  invisible(x)
 }
 
 list.save.json <- function(x,file,...) {
@@ -35,28 +37,6 @@ list.save.yaml <- function(x,file,...) {
 }
 
 list.save.yml <- list.save.yaml
-
-list.save.xml <- function(x,file,...) {
-  warning("Not fully implemented yet")
-  root <- XML::newXMLNode("root")
-  root <- list.to.xml(root,x)
-  XML::saveXML(root,file,...)
-}
-
-list.to.xml <- function(node,sublist) {
-  names <- names(sublist)
-  for(i in seq_along(sublist)){
-    item <- sublist[[i]]
-    child <- XML::newXMLNode(names[i], parent=node)
-    if (is.list(item)){
-      list.to.xml(child, item)
-    }
-    else{
-      XML::xmlValue(child) <- item
-    }
-  }
-  node
-}
 
 list.save.rdata <- function(x,file,name="x",...) {
   if(!is.list(x)) stop("x is not a list")

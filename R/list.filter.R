@@ -1,8 +1,7 @@
 #' Filter a list by a condition.
 #'
-#' @param x The list to be filtered
-#' @param ... The parameters passed to \code{list.if}
-#' @param keep.null Whether to keep \code{NULL} items in the result
+#' @param .data \code{list}
+#' @param cond The condition
 #' @name list.filter
 #' @export
 #' @examples
@@ -13,8 +12,7 @@
 #' list.filter(x,type=="B")
 #' list.filter(x,min(score$c1,score$c2) >= 8)
 #' }
-list.filter <- function(x,...,keep.null=FALSE) {
-  items <- x[list.if(x,...)]
-  if(!keep.null) items[vapply(items,is.null,logical(1))] <- NULL
-  items
+list.filter <- function(.data,cond) {
+  cond <- substitute(cond)
+  list.clean(.data[list.if.internal(.data,cond,FALSE)])
 }

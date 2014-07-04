@@ -1,10 +1,8 @@
 #' Classify list members into unique cases evaluated by given expression.
 #'
-#' @param x The list to be classified
+#' @param .data The list to be classified
 #' @param expr An expression that determines cases
-#' @param sort.cases logical. if TRUE the cases will be sorted in ascending order.
-#' @param keep.case.names Whether to keep the names of the cases
-#' @param keep.item.names Whether to keep the names of the items in the result
+#' @param sort.cases \code{logical}. if \code{TRUE} the cases will be sorted in ascending order.
 #' @name list.class
 #' @export
 #' @examples
@@ -23,19 +21,13 @@
 #' list.class(x,interest)
 #' list.class(x,names(lang))
 #' }
-list.class <- function(x,expr,
-  sort.cases=TRUE,keep.case.names=TRUE,keep.item.names=TRUE) {
+list.class <- function(.data,expr,sort.cases=TRUE) {
   expr <- substitute(expr)
-  values <- list.map(x,eval(expr))
+  values <- list.map.internal(.data,expr)
   cases <- unique(unlist(values,use.names = FALSE))
-  if(keep.case.names) names(cases) <- cases
+  names(cases) <- cases
   if(sort.cases)  cases <- sort(cases)
-  classes <- lapply(cases,function(case) {
-    selector <- vapply(values,function(vi) case %in% vi,logical(1))
-    indices <- which(selector)
-    result <- x[indices]
-    if(!keep.item.names) names(result) <- NULL
-    result
+  lapply(cases,function(case) {
+    .data[vapply(values,function(vi) case %in% vi,logical(1L))]
   })
-  classes
 }

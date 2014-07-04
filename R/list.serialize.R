@@ -1,6 +1,6 @@
 #' Serialize a list
 #'
-#' @param x The list to be serialzied
+#' @param x \code{list}
 #' @param file The file for output
 #' @param type The type of serialization, including native serializer and
 #'    json serializer, which is by default determined by file extension
@@ -23,6 +23,7 @@ list.serialize <- function(x,file,type=tolower(tools::file_ext(file)),...) {
     serialize(x,conn)
     close(conn)
   }
+  invisible(x)
 }
 
 list.serialize.json <- function(x,file,...) {

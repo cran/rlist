@@ -6,9 +6,7 @@
 #' @param subset A logical expression that specifies the subsetting condition
 #' @param select An expression that is evaluated for each item
 #' that satisfies the subsetting condition
-#' @param keep.names Whether to keep the names of list x
-#' @param keep.null Whether to keep \code{NULL} items in the result
-#' @param ... Additional arguments
+#' @param ... Additional parameters
 #' @name subset.list
 #' @export
 #' @examples
@@ -22,32 +20,29 @@
 #' do.call(rbind,
 #'    subset(x,min(score$c1,score$c2) >= 8,data.frame(score)))
 #' }
-subset.list <- function(x,subset=TRUE,select=.,
-  keep.names=TRUE,keep.null=FALSE,...) {
+subset.list <- function(x,subset=TRUE,select=.,...) {
   subset <- substitute(subset)
   select <- substitute(select)
-  l.subset <- lambda(subset)
-  l.select <- lambda(select)
-  enclos.subset <- new.env(FALSE,parent.frame(),1)
-  enclos.select <- new.env(FALSE,parent.frame(),1)
-  items <- lapply(x,function(i) {
-    assign(l.subset$symbol,i,envir = enclos.subset)
-    if(is.list(i) || is.environment(i)) {
-      env <- i
-    } else if(is.vector(i)) {
-      env <- as.list(i)
-    } else {
-      env <- enclos.subset
+  lsubset <- lambda(subset)
+  lselect <- lambda(select)
+  envir.subset <- lambda.env(parent.frame())
+  envir.select <- lambda.env(parent.frame())
+  xnames <- if(is.null(names(x))) character(length(x)) else names(x)
+  items <- Map(function(...) {
+    args <- list(...)
+    names(args) <- lsubset$symbols
+    list2env(args,envir.subset)
+    env <- list.env(args[[1L]])
+    result <- eval(lsubset$expr,env,envir.subset)
+    if(is.logical(result)) {
+      if(length(result) == 1L && result) {
+        names(args) <- lselect$symbols
+        list2env(args,envir.select)
+        eval(lselect$expr,env,envir.select)
+      } else if(length(result) > 1L) {
+        stop("Multiple values are encountered")
+      }
     }
-    result <- eval(l.subset$expr,env,enclos.subset)
-    if(length(result) > 1) stop("More than one results are returned")
-    if(!is.logical(result)) stop("Undetermined condition")
-    if(result) {
-      assign(l.select$symbol,i,envir = enclos.select)
-      eval(l.select$expr,env,enclos.select)
-    }
-  })
-  if(!keep.names) names(items) <- NULL
-  if(!keep.null) items[vapply(items,is.null,logical(1))] <- NULL
-  items
+  },x,seq_along(x),xnames)
+  list.clean(items)
 }

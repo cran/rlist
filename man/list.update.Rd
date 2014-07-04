@@ -3,19 +3,15 @@
 \alias{list.update}
 \title{Update a list by modifying its elements.}
 \usage{
-list.update(x, ..., keep.names = TRUE, keep.null = FALSE,
-  keep.val.null = FALSE)
+list.update(.data, ..., keep.null = FALSE)
 }
 \arguments{
-\item{x}{The list to be transformed}
+\item{.data}{\code{list}}
 
 \item{...}{The elements to update}
 
-\item{keep.names}{Whether to keep the names of list x}
-
-\item{keep.null}{Whether to keep \code{NULL} items in the result}
-
-\item{keep.val.null}{Whether to keep \code{NULL} values in the transformed list item}
+\item{keep.null}{Should \code{NULL} values be preserved
+for \code{modifyList}}
 }
 \description{
 Update a list by modifying its elements.

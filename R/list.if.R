@@ -1,9 +1,9 @@
 #' Return a logical vector that indicates if each member of a list
 #' satisfies a given condition
 #'
-#' @param x A list
+#' @param .data \code{list}
 #' @param cond A logical expression that specifies the condition
-#' @param keep.names Whether to keep the names of list x
+#' @param use.names Whether to keep the names of list x
 #' @name list.if
 #' @export
 #' @examples
@@ -14,24 +14,7 @@
 #' list.if(x,type=="B")
 #' list.if(x,min(score$c1,score$c2) >= 8)
 #' }
-list.if <- function(x,cond,keep.names=TRUE) {
+list.if <- function(.data,cond,use.names=TRUE) {
   cond <- substitute(cond)
-  l <- lambda(cond)
-  enclos <- new.env(FALSE,parent.frame(),1)
-  results <- vapply(x,function(xi) {
-    assign(l$symbol,xi,envir = enclos)
-    if(is.list(xi) || is.environment(xi)) {
-      env <- xi
-    } else if(is.vector(xi)) {
-      env <- as.list(xi)
-    } else {
-      env <- enclos
-    }
-    result <- eval(l$expr,env,enclos)
-    if(length(result) > 1) stop("More than one results are returned")
-    if(!is.logical(result)) stop("Undetermined condition")
-    result
-  },logical(1))
-  if(!keep.names) names(results) <- NULL
-  results
+  list.if.internal(.data,cond,use.names)
 }

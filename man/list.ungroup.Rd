@@ -3,12 +3,10 @@
 \alias{list.ungroup}
 \title{Ungroup a list}
 \usage{
-list.ungroup(x, ..., sort.names = FALSE)
+list.ungroup(.data, sort.names = FALSE)
 }
 \arguments{
-\item{x}{A list}
-
-\item{...}{The additional parameters passed to \code{unlist}}
+\item{.data}{\code{list}}
 
 \item{sort.names}{Should the members be sorted after ungrouping?}
 }

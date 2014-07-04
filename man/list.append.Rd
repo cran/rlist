@@ -3,10 +3,10 @@
 \alias{list.append}
 \title{Append a list}
 \usage{
-list.append(x, ...)
+list.append(.data, ...)
 }
 \arguments{
-\item{x}{The original list}
+\item{.data}{The original list}
 
 \item{...}{A vector or list that is to be appended after \code{x}}
 }
@@ -16,8 +16,8 @@ Append a list
 \examples{
 \dontrun{
 x <- list(a=1,b=2,c=3)
-list.append(x,c(d=4,e=5))
-list.append(x,list(d=4,f=c(2,3)))
+list.append(x,d=4,e=5)
+list.append(x,d=4,f=c(2,3))
 }
 }
 

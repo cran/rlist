@@ -3,14 +3,12 @@
 \alias{list.filter}
 \title{Filter a list by a condition.}
 \usage{
-list.filter(x, ..., keep.null = FALSE)
+list.filter(.data, cond)
 }
 \arguments{
-\item{x}{The list to be filtered}
+\item{.data}{\code{list}}
 
-\item{...}{The parameters passed to \code{list.if}}
-
-\item{keep.null}{Whether to keep \code{NULL} items in the result}
+\item{cond}{The condition}
 }
 \description{
 Filter a list by a condition.
