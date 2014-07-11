@@ -1,7 +1,7 @@
 #' Get whether any list member satisfies the given condition
 #'
 #' @param .data \code{list}
-#' @param cond An \code{expression} that returns logical value
+#' @param cond A logical lambda expression
 #' @param na.rm logical. If true all \code{NA} values are removed
 #' @name list.any
 #' @export
@@ -14,6 +14,5 @@
 #' list.any(x,mean(unlist(score))>=6)
 #' }
 list.any <- function(.data,cond,na.rm=FALSE) {
-  cond <- substitute(cond)
-  any(list.if.internal(.data,cond,FALSE),na.rm = na.rm)
+  any(list.if.internal(.data,substitute(cond),FALSE),na.rm = na.rm)
 }

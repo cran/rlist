@@ -3,14 +3,19 @@
 \alias{list.cases}
 \title{Get all unique cases by expression for a list}
 \usage{
-list.cases(.data, expr, sort = TRUE)
+list.cases(.data, expr, simplify = TRUE, ..., sort = TRUE)
 }
 \arguments{
-\item{.data}{A list}
+\item{.data}{\code{list}}
 
-\item{expr}{The expression to evaluate to find cases}
+\item{expr}{A lambda expression}
 
-\item{sort}{Should the cases be sorted in ascending order?}
+\item{simplify}{\code{logical}. Should the values be simplified
+by \code{unlist}?}
+
+\item{...}{Additional parameters passed to \code{unique}}
+
+\item{sort}{\code{logical}. Should the cases be sorted in ascending order?}
 }
 \description{
 Get all unique cases by expression for a list

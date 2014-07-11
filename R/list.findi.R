@@ -2,7 +2,7 @@
 #' meet given condition
 #'
 #' @param .data \code{list}
-#' @param cond The condition
+#' @param cond A logical lambda expression
 #' @param n The maximal number of members to find out
 #' @name list.findi
 #' @export
@@ -16,6 +16,5 @@
 #' list.findi(x,min(score$c1,score$c2) <= 8,2)
 #' }
 list.findi <- function(.data,cond,n=1L) {
-  cond <- substitute(cond)
-  list.findi.internal(.data,cond,n)
+  list.findi.internal(.data,substitute(cond),n)
 }

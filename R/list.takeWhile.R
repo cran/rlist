@@ -1,7 +1,7 @@
 #' Take out members until the given condition is broken
 #'
 #' @param .data \code{list}
-#' @param cond The condition
+#' @param cond A logical lambda expression
 #' @name list.takeWhile
 #' @export
 #' @examples
@@ -13,17 +13,15 @@
 #' list.takeWhile(x,min(score$c1,score$c2) >= 8)
 #' }
 list.takeWhile <- function(.data,cond) {
-  cond <- substitute(cond)
-  l <- lambda(cond)
+  l <- lambda(substitute(cond))
   envir <- lambda.env(parent.frame())
-  xnames <- names(.data)
+  xnames <- getnames(.data)
   index <- 0L
   for(i in seq_along(.data)) {
     xi <- .data[[i]]
     args <- setnames(list(xi,i,xnames[i]),l$symbols)
     list2env(args,envir)
-    env <- list.env(xi)
-    result <- eval(l$expr,env,envir)
+    result <- eval(l$expr,list.env(xi),envir)
     if(is.logical(result)) {
       if(length(result) == 1L && result) index <- i
       else if(length(result) > 1L) stop("Multiple values are encountered")

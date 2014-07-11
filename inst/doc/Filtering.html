@@ -3,7 +3,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 
-<title>List input/output</title>
+<title>List filtering</title>
 
 <!-- Styles for R syntax highlighter -->
 <style type="text/css">
@@ -192,79 +192,140 @@ hr {
 <body>
 <!--
 %\VignetteEngine{knitr}
-%\VignetteIndexEntry{List input/output}
+%\VignetteIndexEntry{List filtering}
 -->
 
-<h1>List input/output</h1>
+<h1>List filtering</h1>
 
-<p>rlist provides various mechanisms for list data input/output. </p>
+<p>List filtering is to select list members that meet given criteria. In rlist package, more than ten functions are related with list filtering. Basically, they all perform a mapping but aggregate the results in different ways.</p>
 
-<h2>list.parse</h2>
-
-<p><code>list.parse</code> is used to convert an object to list. For example, this function can convert <code>data.frame</code>, <code>matrix</code> to a list with identical structure.</p>
-
-<pre><code class="r">df1 &lt;- data.frame(name=c(&quot;Ken&quot;,&quot;Ashley&quot;,&quot;James&quot;),
-  age=c(24,25,23),stringsAsFactors = FALSE)
-str(list.parse(df1))
+<pre><code class="r">library(rlist)
+devs &lt;- 
+  list(
+    p1=list(name=&quot;Ken&quot;,age=24,
+      interest=c(&quot;reading&quot;,&quot;music&quot;,&quot;movies&quot;),
+      lang=list(r=2,csharp=4,python=3)),
+    p2=list(name=&quot;James&quot;,age=25,
+      interest=c(&quot;sports&quot;,&quot;music&quot;),
+      lang=list(r=3,java=2,cpp=5)),
+    p3=list(name=&quot;Penny&quot;,age=24,
+      interest=c(&quot;movies&quot;,&quot;reading&quot;),
+      lang=list(r=1,cpp=4,python=2)))
 </code></pre>
 
-<pre><code># List of 3
-#  $ 1:List of 2
-#   ..$ name: chr &quot;Ken&quot;
-#   ..$ age : num 24
-#  $ 2:List of 2
-#   ..$ name: chr &quot;Ashley&quot;
-#   ..$ age : num 25
-#  $ 3:List of 2
-#   ..$ name: chr &quot;James&quot;
-#   ..$ age : num 23
+<h2>list.filter</h2>
+
+<p><code>list.filter</code> filters a list by an expression that returns a logical value. Only the list members for which the value of that expression turns out to be <code>TRUE</code> will be part of the results.</p>
+
+<pre><code class="r">str(list.filter(devs, age &gt;= 25))
 </code></pre>
 
-<p>This function also parses JSON or YAML format text.</p>
-
-<pre><code class="r">jsontext &lt;- &#39;
-[{ &quot;name&quot;: &quot;Ken&quot;, &quot;age&quot;: 24 },
- { &quot;name&quot;: &quot;Ashley&quot;, &quot;age&quot;: 25},
- { &quot;name&quot;: &quot;James&quot;, &quot;age&quot;: 23 }]&#39;
-list.parse(jsontext,type=&quot;json&quot;)
+<pre><code># List of 1
+#  $ p2:List of 4
+#   ..$ name    : chr &quot;James&quot;
+#   ..$ age     : num 25
+#   ..$ interest: chr [1:2] &quot;sports&quot; &quot;music&quot;
+#   ..$ lang    :List of 3
+#   .. ..$ r   : num 3
+#   .. ..$ java: num 2
+#   .. ..$ cpp : num 5
 </code></pre>
 
-<pre><code># [[1]]
-# [[1]]$name
-# [1] &quot;Ken&quot;
-# 
-# [[1]]$age
-# [1] 24
-# 
-# 
-# [[2]]
-# [[2]]$name
-# [1] &quot;Ashley&quot;
-# 
-# [[2]]$age
-# [1] 25
-# 
-# 
-# [[3]]
-# [[3]]$name
+<pre><code class="r">str(list.filter(devs, &quot;sports&quot; %in% interest))
+</code></pre>
+
+<pre><code># List of 1
+#  $ p2:List of 4
+#   ..$ name    : chr &quot;James&quot;
+#   ..$ age     : num 25
+#   ..$ interest: chr [1:2] &quot;sports&quot; &quot;music&quot;
+#   ..$ lang    :List of 3
+#   .. ..$ r   : num 3
+#   .. ..$ java: num 2
+#   .. ..$ cpp : num 5
+</code></pre>
+
+<pre><code class="r">str(list.filter(devs, mean(as.numeric(lang)) &gt;= 3))
+</code></pre>
+
+<pre><code># List of 2
+#  $ p1:List of 4
+#   ..$ name    : chr &quot;Ken&quot;
+#   ..$ age     : num 24
+#   ..$ interest: chr [1:3] &quot;reading&quot; &quot;music&quot; &quot;movies&quot;
+#   ..$ lang    :List of 3
+#   .. ..$ r     : num 2
+#   .. ..$ csharp: num 4
+#   .. ..$ python: num 3
+#  $ p2:List of 4
+#   ..$ name    : chr &quot;James&quot;
+#   ..$ age     : num 25
+#   ..$ interest: chr [1:2] &quot;sports&quot; &quot;music&quot;
+#   ..$ lang    :List of 3
+#   .. ..$ r   : num 3
+#   .. ..$ java: num 2
+#   .. ..$ cpp : num 5
+</code></pre>
+
+<p>Meta-symbols defined in lambda expression can also be used. The following code will pick up the list member whose index is even.</p>
+
+<pre><code class="r">str(list.filter(devs, .i %% 2==0))
+</code></pre>
+
+<pre><code># List of 1
+#  $ p2:List of 4
+#   ..$ name    : chr &quot;James&quot;
+#   ..$ age     : num 25
+#   ..$ interest: chr [1:2] &quot;sports&quot; &quot;music&quot;
+#   ..$ lang    :List of 3
+#   .. ..$ r   : num 3
+#   .. ..$ java: num 2
+#   .. ..$ cpp : num 5
+</code></pre>
+
+<h2>list.find</h2>
+
+<p>In some cases, we don&#39;t need to find all the results given the criteria. Rather, we only need to find a few, sometimes only one. <code>list.find</code> will avoid searching across all list member but stops at a specific number of items found.</p>
+
+<pre><code class="r">list.find(devs, age &gt;= 25, 1)
+</code></pre>
+
+<pre><code># $p2
+# $p2$name
 # [1] &quot;James&quot;
 # 
-# [[3]]$age
-# [1] 23
+# $p2$age
+# [1] 25
+# 
+# $p2$interest
+# [1] &quot;sports&quot; &quot;music&quot; 
+# 
+# $p2$lang
+# $p2$lang$r
+# [1] 3
+# 
+# $p2$lang$java
+# [1] 2
+# 
+# $p2$lang$cpp
+# [1] 5
 </code></pre>
 
-<pre><code class="r">yamltext &lt;- &quot;
-p1:
-  name: Ken
-  age: 24
-p2:
-  name: Ashley
-  age: 25
-p3:
-  name: James
-  age: 23
-&quot;
-list.parse(yamltext,type=&quot;yaml&quot;)
+<h2>list.findi</h2>
+
+<p><code>list.findi</code> only returns the index of the members found.</p>
+
+<pre><code class="r">list.findi(devs, age &gt;= 23, 2)
+</code></pre>
+
+<pre><code># [1] 1 2
+</code></pre>
+
+<h2>list.takeWhile</h2>
+
+<p><code>list.takeWhile</code> keeps taking members while a condition holds true.</p>
+
+<pre><code class="r">list.takeWhile(devs, lang$r &gt;= 2)
 </code></pre>
 
 <pre><code># $p1
@@ -274,34 +335,352 @@ list.parse(yamltext,type=&quot;yaml&quot;)
 # $p1$age
 # [1] 24
 # 
+# $p1$interest
+# [1] &quot;reading&quot; &quot;music&quot;   &quot;movies&quot; 
+# 
+# $p1$lang
+# $p1$lang$r
+# [1] 2
+# 
+# $p1$lang$csharp
+# [1] 4
+# 
+# $p1$lang$python
+# [1] 3
+# 
+# 
 # 
 # $p2
 # $p2$name
-# [1] &quot;Ashley&quot;
+# [1] &quot;James&quot;
 # 
 # $p2$age
 # [1] 25
 # 
+# $p2$interest
+# [1] &quot;sports&quot; &quot;music&quot; 
+# 
+# $p2$lang
+# $p2$lang$r
+# [1] 3
+# 
+# $p2$lang$java
+# [1] 2
+# 
+# $p2$lang$cpp
+# [1] 5
+</code></pre>
+
+<h2>list.skipWhile</h2>
+
+<p><code>list.skipWhile</code> keeps skipping members while a condition holds true.</p>
+
+<pre><code class="r">list.skipWhile(devs, lang$r &lt;= 2)
+</code></pre>
+
+<pre><code># $p2
+# $p2$name
+# [1] &quot;James&quot;
+# 
+# $p2$age
+# [1] 25
+# 
+# $p2$interest
+# [1] &quot;sports&quot; &quot;music&quot; 
+# 
+# $p2$lang
+# $p2$lang$r
+# [1] 3
+# 
+# $p2$lang$java
+# [1] 2
+# 
+# $p2$lang$cpp
+# [1] 5
+# 
+# 
 # 
 # $p3
 # $p3$name
-# [1] &quot;James&quot;
+# [1] &quot;Penny&quot;
 # 
 # $p3$age
-# [1] 23
+# [1] 24
+# 
+# $p3$interest
+# [1] &quot;movies&quot;  &quot;reading&quot;
+# 
+# $p3$lang
+# $p3$lang$r
+# [1] 1
+# 
+# $p3$lang$cpp
+# [1] 4
+# 
+# $p3$lang$python
+# [1] 2
 </code></pre>
 
-<h2>list.load, list.save</h2>
+<h2>list.if</h2>
 
-<p><code>list.load</code> is used to load list data from a JSON, YAML, or RData file. Its default behavior is to first look at file extension and then determine which data loader is used. If the file extension does not match JSON or YAML, it will use RData loader.</p>
+<p><code>list.if</code> returns a logical vector that indicates whether a condition holds for each member of a list.</p>
 
-<p><code>list.save</code> is used to save a list to a JSON, YAML, or RData file. Its default behavior is similar with that of <code>list.load</code>.</p>
+<pre><code class="r">list.if(devs, &quot;music&quot; %in% interest)
+</code></pre>
 
-<p>If the data are read or written by these two functions in JSON or YAML format, the data will be human-readable. However, if a list contains complex objects such as S4 objects and language objects, the text-based format may not be appropriate to store such objects. You should consider storing them in binary format, i.e. RData file or serialize the object.</p>
+<pre><code>#    p1    p2    p3 
+#  TRUE  TRUE FALSE
+</code></pre>
 
-<h2>list.serialize, list.unserialize</h2>
+<pre><code class="r">list.if(devs, &quot;java&quot; %in% names(lang))
+</code></pre>
 
-<p>Serialization is the process that stores an object into fully-recoverable data format. <code>list.serialize</code> and <code>list.deserialize</code> provides the mechanism to capitalize the R native serializer/unserializer and JSON serializer/unserializer provided by <code>jsonlite</code>.</p>
+<pre><code>#    p1    p2    p3 
+# FALSE  TRUE FALSE
+</code></pre>
+
+<h2>list.which</h2>
+
+<p><code>list.if</code> returns a integer vector of the indices of the members of a list that meet a given condition.</p>
+
+<pre><code class="r">list.which(devs, &quot;music&quot; %in% interest)
+</code></pre>
+
+<pre><code># [1] 1 2
+</code></pre>
+
+<pre><code class="r">list.which(devs, &quot;java&quot; %in% names(lang))
+</code></pre>
+
+<pre><code># [1] 2
+</code></pre>
+
+<h2>list.all</h2>
+
+<p><code>list.all</code> returns <code>TRUE</code> if all the members of a list satisfy a given condition, or <code>FALSE</code> otherwise.</p>
+
+<pre><code class="r">list.all(devs, mean(as.numeric(lang)) &gt;= 3)
+</code></pre>
+
+<pre><code># [1] FALSE
+</code></pre>
+
+<pre><code class="r">list.all(devs, &quot;r&quot; %in% names(lang))
+</code></pre>
+
+<pre><code># [1] TRUE
+</code></pre>
+
+<h2>list.any</h2>
+
+<p><code>list.any</code> returns <code>TRUE</code> if at least one of the members of a list satisfies a given condition, or <code>FALSE</code> otherwise.</p>
+
+<pre><code class="r">list.any(devs, mean(as.numeric(lang)) &gt;= 3)
+</code></pre>
+
+<pre><code># [1] TRUE
+</code></pre>
+
+<pre><code class="r">list.any(devs, &quot;python&quot; %in% names(lang))
+</code></pre>
+
+<pre><code># [1] TRUE
+</code></pre>
+
+<h2>list.count</h2>
+
+<p><code>list.count</code> return a scalar integer that indicates the number of members of a list that satisfy a given condition.</p>
+
+<pre><code class="r">list.count(devs, mean(as.numeric(lang)) &gt;= 3)
+</code></pre>
+
+<pre><code># [1] 2
+</code></pre>
+
+<pre><code class="r">list.count(devs, &quot;r&quot; %in% names(lang))
+</code></pre>
+
+<pre><code># [1] 3
+</code></pre>
+
+<h2>list.match</h2>
+
+<p><code>list.match</code> filters a list by matching the names of the list members by a regular expression pattern.</p>
+
+<pre><code class="r">list.match(devs, &quot;p[12]&quot;)
+</code></pre>
+
+<pre><code># $p1
+# $p1$name
+# [1] &quot;Ken&quot;
+# 
+# $p1$age
+# [1] 24
+# 
+# $p1$interest
+# [1] &quot;reading&quot; &quot;music&quot;   &quot;movies&quot; 
+# 
+# $p1$lang
+# $p1$lang$r
+# [1] 2
+# 
+# $p1$lang$csharp
+# [1] 4
+# 
+# $p1$lang$python
+# [1] 3
+# 
+# 
+# 
+# $p2
+# $p2$name
+# [1] &quot;James&quot;
+# 
+# $p2$age
+# [1] 25
+# 
+# $p2$interest
+# [1] &quot;sports&quot; &quot;music&quot; 
+# 
+# $p2$lang
+# $p2$lang$r
+# [1] 3
+# 
+# $p2$lang$java
+# [1] 2
+# 
+# $p2$lang$cpp
+# [1] 5
+</code></pre>
+
+<h2>list.remove</h2>
+
+<p><code>list.remove</code> removes list members by index or name.</p>
+
+<pre><code class="r">list.remove(devs, c(&quot;p1&quot;,&quot;p2&quot;))
+</code></pre>
+
+<pre><code># $p3
+# $p3$name
+# [1] &quot;Penny&quot;
+# 
+# $p3$age
+# [1] 24
+# 
+# $p3$interest
+# [1] &quot;movies&quot;  &quot;reading&quot;
+# 
+# $p3$lang
+# $p3$lang$r
+# [1] 1
+# 
+# $p3$lang$cpp
+# [1] 4
+# 
+# $p3$lang$python
+# [1] 2
+</code></pre>
+
+<pre><code class="r">list.remove(devs, c(2,3))
+</code></pre>
+
+<pre><code># $p1
+# $p1$name
+# [1] &quot;Ken&quot;
+# 
+# $p1$age
+# [1] 24
+# 
+# $p1$interest
+# [1] &quot;reading&quot; &quot;music&quot;   &quot;movies&quot; 
+# 
+# $p1$lang
+# $p1$lang$r
+# [1] 2
+# 
+# $p1$lang$csharp
+# [1] 4
+# 
+# $p1$lang$python
+# [1] 3
+</code></pre>
+
+<h2>list.exclude</h2>
+
+<p><code>list.exclude</code> removes list members that satisfy given condition.</p>
+
+<pre><code class="r">list.exclude(devs, &quot;sports&quot; %in% interest)
+</code></pre>
+
+<pre><code># $p1
+# $p1$name
+# [1] &quot;Ken&quot;
+# 
+# $p1$age
+# [1] 24
+# 
+# $p1$interest
+# [1] &quot;reading&quot; &quot;music&quot;   &quot;movies&quot; 
+# 
+# $p1$lang
+# $p1$lang$r
+# [1] 2
+# 
+# $p1$lang$csharp
+# [1] 4
+# 
+# $p1$lang$python
+# [1] 3
+# 
+# 
+# 
+# $p3
+# $p3$name
+# [1] &quot;Penny&quot;
+# 
+# $p3$age
+# [1] 24
+# 
+# $p3$interest
+# [1] &quot;movies&quot;  &quot;reading&quot;
+# 
+# $p3$lang
+# $p3$lang$r
+# [1] 1
+# 
+# $p3$lang$cpp
+# [1] 4
+# 
+# $p3$lang$python
+# [1] 2
+</code></pre>
+
+<h2>subset</h2>
+
+<p><code>subset</code> is implemented for list object in a way that combines <code>list.filter</code> and <code>list.map</code>. This function basically filters a list while at the same time maps the qualified list member by an expression.</p>
+
+<pre><code class="r">subset(devs,age&gt;=24,name)
+</code></pre>
+
+<pre><code># $p1
+# [1] &quot;Ken&quot;
+# 
+# $p2
+# [1] &quot;James&quot;
+# 
+# $p3
+# [1] &quot;Penny&quot;
+</code></pre>
+
+<pre><code class="r">subset(devs,&quot;reading&quot; %in% interest, sum(as.numeric(lang)))
+</code></pre>
+
+<pre><code># $p1
+# [1] 9
+# 
+# $p3
+# [1] 7
+</code></pre>
 
 </body>
 

@@ -59,14 +59,13 @@ library(pipeR)
 devs %>>% 
   list.filter("music" %in% interest & "r" %in% names(lang)) %>>%
   list.select(name,age) %>>%
-  list.rbind %>>%
-  data.frame
+  list.stack
 ```
 
 ```
-    name age
-p1   Ken  24
-p2 James  25
+   name age
+1   Ken  24
+2 James  25
 ```
 
 The example above uses [`pipeR` package](http://renkun.me/pipeR/) for pipeline operator `%>>%` that chains commands in a fluent style.
@@ -81,19 +80,23 @@ The table below lists the functions currently supported.
 - `list.class`: Classify the list members by a vector expression
 - `list.join`: Join two lists by an expression
 - `list.update`: Update a list with partial specification
+- `list.table`: Create a table for a list by expression
 - `list.parse`: Parse `yaml`, `json` format text, or `data.frame` and `matrix` to a list with identical structure.
-- `list.load`, `list.save`: Load or save a list stored in `yaml`, `json`, `xml` or `RData` file.
+- `list.load`, `list.save`: Load or save a list stored in `yaml`, `json`  or `RData` file.
 - ...
 
 ## Lambda expression
 
-In this package, all functions that work with expressions support the following forms of lambda expressions:
+In this package, almost all functions that work with expressions accept the following forms of lambda expressions:
 
-- `x ~ g(x)`
-- `x -> g(x)`
-- `f(x) -> g(x)`
-- `f(x,i) -> g(x,i)`
-- `f(x,i,name) -> g(x,i,name)`
+- Implicit lambda expression: `g(x)`
+- Univariate lambda expressions: 
+    * `x ~ g(x)`
+    * `x -> g(x)`
+    * `f(x) -> g(x)`
+- Multivariate lambda expressions:
+    * `f(x,i) -> g(x,i)`
+    * `f(x,i,name) -> g(x,i,name)`
 
 where `x` refers to the list member itself, `i` denotes the index, `name` denotes the name. If the symbols are not explicitly declared, `.`, `.i` and `.name` will by default be used to represent them, respectively.
 
@@ -106,6 +109,8 @@ nums %>>% list.mapv(x ~ sum(x))
 nums %>>% list.filter(x -> mean(x)>=3)
 nums %>>% list.mapv(f(x,i) -> sum(x,i))
 ```
+
+*Note that `list.select` only accepts a group of implicit lambda expressions.*
 
 ## Vignettes
 

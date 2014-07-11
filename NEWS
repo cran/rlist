@@ -1,10 +1,25 @@
+Version 0.2.2 (2014-07-11)
+===
+Add `list.stack` that binds list members to a data.frame.
+Add `list.zip` that combines multiple lists element-wisely.
+Add `list.maps` that performs mapping over multiple lists.
+Performance improvements.
+Minor maintainence updates.
+`list.cases` supports list-like cases
+Fixed [#23](https://github.com/renkun-ken/rlist/issues/23)
+Fixed [#25](https://github.com/renkun-ken/rlist/issues/25)
+`list.select` no longer accepts explicit lambda expressions.
+Vignettes updated
+
 Version 0.2.1 (2014-07-04)
 ===
+Add new function `list.table`
 Minor maintainence updates.
 Fixed [#6](https://github.com/renkun-ken/rlist/issues/6)
 Fixed [#11](https://github.com/renkun-ken/rlist/issues/11)
 Fixed [#20](https://github.com/renkun-ken/rlist/issues/20)
 Fixed [#21](https://github.com/renkun-ken/rlist/issues/21)
+
 
 Version 0.2 (2014-07-02)
 ===

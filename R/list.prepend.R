@@ -1,7 +1,7 @@
 #' Prepend a list
 #'
 #' @param .data \code{list}
-#' @param ... A vector or list that is to be prepended before \code{x}
+#' @param ... The \code{vector} or \code{list} to prepend before \code{x}
 #' @name list.prepend
 #' @export
 #' @examples
@@ -11,5 +11,9 @@
 #' list.prepend(x,d=4,f=c(2,3))
 #' }
 list.prepend <- function(.data,...) {
-  c(list(...),.data)
+  if(is.list(.data)) {
+    c(list(...),.data)
+  } else {
+    c(...,.data)
+  }
 }

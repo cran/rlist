@@ -1,7 +1,7 @@
 #' Filter a list by a condition.
 #'
 #' @param .data \code{list}
-#' @param cond The condition
+#' @param cond A logical lambda expression
 #' @name list.filter
 #' @export
 #' @examples
@@ -13,6 +13,5 @@
 #' list.filter(x,min(score$c1,score$c2) >= 8)
 #' }
 list.filter <- function(.data,cond) {
-  cond <- substitute(cond)
-  list.clean(.data[list.if.internal(.data,cond,FALSE)])
+  list.clean(.data[list.if.internal(.data,substitute(cond),FALSE)])
 }

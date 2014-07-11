@@ -2,7 +2,7 @@
 #' given condition
 #'
 #' @param .data \code{list}
-#' @param cond The condition
+#' @param cond A logical lambda expression
 #' @name list.which
 #' @export
 #' @examples
@@ -14,6 +14,5 @@
 #' list.which(x,min(score$c1,score$c2) >= 8)
 #' }
 list.which <- function(.data,cond) {
-  cond <- substitute(cond)
-  which(list.if.internal(.data,cond,FALSE))
+  which(list.if.internal(.data,substitute(cond),FALSE))
 }

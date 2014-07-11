@@ -96,7 +96,7 @@ test_that("list.merge", {
 })
 
 test_that("list.rbind", {
-  x <- lapply(1:10,function(i) data.frame(a=i,b=i^2))
+  x <- lapply(1:10,function(i) c(a=i,b=i^2))
   expect_identical(list.rbind(x),do.call(rbind,x))
 })
 
@@ -106,6 +106,11 @@ test_that("list.cbind", {
     data.frame(c=rnorm(10),d=rnorm(10)),
     data.frame(e=rnorm(10),f=rnorm(10)))
   expect_identical(list.cbind(x),do.call(cbind,x))
+})
+
+test_that("list.stack", {
+  x <- lapply(1:10,function(i) list(a=i,b=i^2))
+  expect_false(is.null(list.stack(x)))
 })
 
 test_that("list.match", {
@@ -178,4 +183,20 @@ test_that("list.any", {
   expect_equal(list.any(x,type=="B"),TRUE)
   expect_equal(list.any(x,mean(unlist(score))>=20),FALSE)
   expect_equal(sapply(8:10,function(i) list.any(x,score$c1>=i)),c(T,T,T))
+})
+
+test_that("list.table", {
+  x <- list(p1 = list(type="A",score=list(c1=10,c2=8)),
+    p2 = list(type="B",score=list(c1=9,c2=9)),
+    p3 = list(type="B",score=list(c1=9,c2=7)))
+  x.types <- c("A","B","B")
+  x.c1 <- c(10,9,9)
+  expect_identical(list.table(x,type),table(type=x.types))
+  expect_identical(list.table(x,type,c1=score$c1),table(type=x.types,c1=x.c1))
+})
+
+test_that("list.zip", {
+  a <- list(1,2)
+  b <- list("a","b")
+  expect_identical(list.zip(a,b),list(list(a=1,b="a"),list(a=2,b="b")))
 })

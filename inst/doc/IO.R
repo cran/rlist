@@ -1,6 +1,8 @@
 ## ----, echo = FALSE, message = FALSE-------------------------------------
-library(rlist)
 knitr::opts_chunk$set(comment="#",error=FALSE,tidy=FALSE)
+
+## ------------------------------------------------------------------------
+library(rlist)
 
 ## ------------------------------------------------------------------------
 df1 <- data.frame(name=c("Ken","Ashley","James"),

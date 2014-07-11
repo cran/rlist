@@ -1,8 +1,8 @@
 ## ----, echo = FALSE, message = FALSE-------------------------------------
-library(rlist)
 knitr::opts_chunk$set(comment="#",error=FALSE,tidy=FALSE)
 
 ## ------------------------------------------------------------------------
+library(rlist)
 devs <- 
   list(
     p1=list(name="Ken",age=24,
@@ -16,22 +16,25 @@ devs <-
       lang=list(r=1,cpp=4,python=2)))
 
 ## ------------------------------------------------------------------------
-str(list.group(devs, age))
-str(list.group(devs, length(interest)))
+newinfo <-
+  list(
+    p1=list(name="Ken",email="ken@xyz.com"),
+    p2=list(name="Penny",email="penny@xyz.com"),
+    p3=list(name="James",email="james@xyz.com"))
+str(list.join(devs,newinfo,name))
 
 ## ------------------------------------------------------------------------
-ageGroups <- list.group(devs, age)
-str(list.ungroup(ageGroups))
+rev1 <-
+  list(
+    p1=list(age=25),
+    p2=list(lang=list(r=2,cpp=4)),
+    p3=list(lang=list(r=2,python=NULL)))
+str(list.merge(devs,rev1))
 
 ## ------------------------------------------------------------------------
-list.cases(devs, interest)
-
-## ------------------------------------------------------------------------
-list.cases(devs, names(lang))
-
-## ------------------------------------------------------------------------
-str(list.class(devs, interest))
-
-## ------------------------------------------------------------------------
-str(list.class(devs, names(lang)))
+rev2 <-
+  list(
+    p1=list(lang=list(csharp=5)),
+    p2=list(age=24,lang=list(r=3)))
+str(list.merge(devs,rev1,rev2))
 

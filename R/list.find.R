@@ -1,7 +1,7 @@
 #' Find a specific number of members in a list that meeting given condition
 #'
 #' @param .data \code{list}
-#' @param cond The condition
+#' @param cond A logical lambda expression
 #' @param n The number of items to find
 #' @name list.find
 #' @export
@@ -14,6 +14,5 @@
 #' list.find(x,min(score$c1,score$c2) >= 9)
 #' }
 list.find <- function(.data,cond,n=1L) {
-  cond <- substitute(cond)
-  .data[list.findi.internal(.data,cond,n)]
+  .data[list.findi.internal(.data,substitute(cond),n)]
 }

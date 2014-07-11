@@ -1,8 +1,11 @@
 #' Get all unique cases by expression for a list
 #'
-#' @param .data A list
-#' @param expr The expression to evaluate to find cases
-#' @param sort Should the cases be sorted in ascending order?
+#' @param .data \code{list}
+#' @param expr A lambda expression
+#' @param simplify \code{logical}. Should the values be simplified
+#'    by \code{unlist}?
+#' @param ... Additional parameters passed to \code{unique}
+#' @param sort \code{logical}. Should the cases be sorted in ascending order?
 #' @name list.cases
 #' @export
 #' @examples
@@ -13,8 +16,12 @@
 #' list.cases(x,type)
 #' list.cases(x,mean(unlist(score)))
 #' }
-list.cases <- function(.data,expr,sort=TRUE) {
-  expr <- substitute(expr)
-  cases <- unique(unlist(list.map.internal(.data,expr),use.names = FALSE))
-  if(sort) sort(cases) else cases
+list.cases <- function(.data,expr,simplify=TRUE,...,sort=TRUE) {
+  values <- list.map.internal(.data,substitute(expr))
+  if(simplify) {
+    atomic <- vapply(values,is.atomic,logical(1L))
+    if(all(atomic)) values <- unlist(values,use.names = FALSE)
+  }
+  cases <- unique(values,...)
+  if(sort && is.atomic(cases)) sort(cases) else cases
 }

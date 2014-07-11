@@ -1,6 +1,7 @@
 #' Select by name or expression for each member of a list
+#'
 #' @param .data \code{list}
-#' @param ... The members to select
+#' @param ... A group of implicit labmda expressions
 #' @name list.select
 #' @export
 #' @examples
@@ -14,12 +15,7 @@
 #' list.select(x,type,score.range=range(unlist(score)))
 #' }
 list.select <- function(.data,...) {
-  args <- as.list(match.call(expand.dots = FALSE))$`...`
-  argnames <- names(args)
-  if(is.null(argnames))  argnames <- character(length(args))
-  indices <- argnames=="" & vapply(args,is.name,logical(1L))
-  argnames[indices] <- vapply(args[indices],as.character,character(1L))
-  names(args) <- argnames
-  items <- lapply(args,list.map.internal,.data=.data,envir=parent.frame())
-  do.call(Map,c(function(.,...) list(...),list(.data),items))
+  args <- set_argnames(dots(...))
+  quote <- as.call(c(quote(list),args))
+  list.map.internal(.data,quote)
 }

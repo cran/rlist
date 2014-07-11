@@ -3,7 +3,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 
-<title>List mapping</title>
+<title>List joining</title>
 
 <!-- Styles for R syntax highlighter -->
 <style type="text/css">
@@ -192,14 +192,15 @@ hr {
 <body>
 <!--
 %\VignetteEngine{knitr}
-%\VignetteIndexEntry{List mapping}
+%\VignetteIndexEntry{List joining}
 -->
 
-<h1>List mapping</h1>
+<h1>List joining</h1>
 
-<p>List mapping is to evaluate an expression for each list member. It is the fundamental operation in rlist. Almost all functions in this pacakge that work with expressions are using mapping but in different ways. The following examples demonstrate several types of mapping.</p>
+<p>rlist provides <code>list.join</code> to perform simple joining of two lists, and <code>list.merge</code> to perform modification merge of a series of lists.</p>
 
-<pre><code class="r">devs &lt;- 
+<pre><code class="r">library(rlist)
+devs &lt;- 
   list(
     p1=list(name=&quot;Ken&quot;,age=24,
       interest=c(&quot;reading&quot;,&quot;music&quot;,&quot;movies&quot;),
@@ -212,181 +213,119 @@ hr {
       lang=list(r=1,cpp=4,python=2)))
 </code></pre>
 
-<h2>list.map</h2>
+<h2>list.join</h2>
 
-<p>The simplest way of mapping is provided by <code>list.map</code>. Basically, it evaluates an expression for each list member. </p>
+<p><code>list.join</code> is used to join two lists by a key evaluated from either a common expression for the two lists or two separate expressions for each list.</p>
 
-<p>The function makes it easier to query a list by putting all fields of the list member in mapping to the environment where the expression is evaluated. In other words, the expression is evaluated in the context of one list member each time.</p>
-
-<p>For example, the following code maps each list member in <code>devs</code> by expression <code>age</code>. Therefore, it results in a list where each item becomes the value of that expression for each member of <code>devs</code>.</p>
-
-<pre><code class="r">list.map(devs, age)
+<pre><code class="r">newinfo &lt;-
+  list(
+    p1=list(name=&quot;Ken&quot;,email=&quot;ken@xyz.com&quot;),
+    p2=list(name=&quot;Penny&quot;,email=&quot;penny@xyz.com&quot;),
+    p3=list(name=&quot;James&quot;,email=&quot;james@xyz.com&quot;))
+str(list.join(devs,newinfo,name))
 </code></pre>
 
-<pre><code># $p1
-# [1] 24
-# 
-# $p2
-# [1] 25
-# 
-# $p3
-# [1] 24
+<pre><code># List of 3
+#  $ p1:List of 5
+#   ..$ name    : chr &quot;Ken&quot;
+#   ..$ age     : num 24
+#   ..$ interest: chr [1:3] &quot;reading&quot; &quot;music&quot; &quot;movies&quot;
+#   ..$ lang    :List of 3
+#   .. ..$ r     : num 2
+#   .. ..$ csharp: num 4
+#   .. ..$ python: num 3
+#   ..$ email   : chr &quot;ken@xyz.com&quot;
+#  $ p2:List of 5
+#   ..$ name    : chr &quot;James&quot;
+#   ..$ age     : num 25
+#   ..$ interest: chr [1:2] &quot;sports&quot; &quot;music&quot;
+#   ..$ lang    :List of 3
+#   .. ..$ r   : num 3
+#   .. ..$ java: num 2
+#   .. ..$ cpp : num 5
+#   ..$ email   : chr &quot;james@xyz.com&quot;
+#  $ p3:List of 5
+#   ..$ name    : chr &quot;Penny&quot;
+#   ..$ age     : num 24
+#   ..$ interest: chr [1:2] &quot;movies&quot; &quot;reading&quot;
+#   ..$ lang    :List of 3
+#   .. ..$ r     : num 1
+#   .. ..$ cpp   : num 4
+#   .. ..$ python: num 2
+#   ..$ email   : chr &quot;penny@xyz.com&quot;
 </code></pre>
 
-<p>Since the expression does not have to be a field name of the list member, we can evaluate whatever we want in the context of a list member.</p>
+<h2>list.merge</h2>
 
-<p>The following code maps each list member to the sum of years of they use the programming languages they know.</p>
+<p><code>list.merge</code> is used to recursively merge a series of lists with the later always updates the former. It works with two lists, as shown in the example below, in which a revision is merged with the original list.</p>
 
-<pre><code class="r">list.map(devs, sum(as.numeric(lang)))
+<pre><code class="r">rev1 &lt;-
+  list(
+    p1=list(age=25),
+    p2=list(lang=list(r=2,cpp=4)),
+    p3=list(lang=list(r=2,python=NULL)))
+str(list.merge(devs,rev1))
 </code></pre>
 
-<pre><code># $p1
-# [1] 9
-# 
-# $p2
-# [1] 10
-# 
-# $p3
-# [1] 7
+<pre><code># List of 3
+#  $ p1:List of 4
+#   ..$ name    : chr &quot;Ken&quot;
+#   ..$ age     : num 25
+#   ..$ interest: chr [1:3] &quot;reading&quot; &quot;music&quot; &quot;movies&quot;
+#   ..$ lang    :List of 3
+#   .. ..$ r     : num 2
+#   .. ..$ csharp: num 4
+#   .. ..$ python: num 3
+#  $ p2:List of 4
+#   ..$ name    : chr &quot;James&quot;
+#   ..$ age     : num 25
+#   ..$ interest: chr [1:2] &quot;sports&quot; &quot;music&quot;
+#   ..$ lang    :List of 3
+#   .. ..$ r   : num 2
+#   .. ..$ java: num 2
+#   .. ..$ cpp : num 4
+#  $ p3:List of 4
+#   ..$ name    : chr &quot;Penny&quot;
+#   ..$ age     : num 24
+#   ..$ interest: chr [1:2] &quot;movies&quot; &quot;reading&quot;
+#   ..$ lang    :List of 2
+#   .. ..$ r  : num 2
+#   .. ..$ cpp: num 4
 </code></pre>
 
-<p>If we need more than one values for each member, we can evaluate a vector or list expression.</p>
+<p>The function also works with multiple lists. When the second revision is obtained, the three lists can be merged in order.</p>
 
-<p>The following code maps each list member to a new list of his or her age and range of number of years using a programming language.</p>
-
-<pre><code class="r">list.map(devs, list(age=age,range=range(as.numeric(lang))))
+<pre><code class="r">rev2 &lt;-
+  list(
+    p1=list(lang=list(csharp=5)),
+    p2=list(age=24,lang=list(r=3)))
+str(list.merge(devs,rev1,rev2))
 </code></pre>
 
-<pre><code># $p1
-# $p1$age
-# [1] 24
-# 
-# $p1$range
-# [1] 2 4
-# 
-# 
-# $p2
-# $p2$age
-# [1] 25
-# 
-# $p2$range
-# [1] 2 5
-# 
-# 
-# $p3
-# $p3$age
-# [1] 24
-# 
-# $p3$range
-# [1] 1 4
-</code></pre>
-
-<h2>list.mapv</h2>
-
-<p>If we want to get the mapping results as a vector rather than a list, we can use <code>list.mapv</code>, which basically calls <code>unlist</code> to the list resulted from <code>list.map</code>.</p>
-
-<pre><code class="r">list.mapv(devs, age)
-</code></pre>
-
-<pre><code># p1 p2 p3 
-# 24 25 24
-</code></pre>
-
-<pre><code class="r">list.mapv(devs, sum(as.numeric(lang)))
-</code></pre>
-
-<pre><code># p1 p2 p3 
-#  9 10  7
-</code></pre>
-
-<pre><code class="r">list.mapv(devs, range(as.numeric(lang)))
-</code></pre>
-
-<pre><code># p11 p12 p21 p22 p31 p32 
-#   2   4   2   5   1   4
-</code></pre>
-
-<h2>list.select</h2>
-
-<p>In contrast to <code>list.map</code>, <code>list.select</code> provides an easier way to map each list member to a new list. This functions basically evaluates all given expressions and put the results into a list.</p>
-
-<p>If a field name a list member is selected, its name will automatically preserved. If a list item evaluated from other expression is selected, we may better give it a name, or otherwise it will only have an index.</p>
-
-<pre><code class="r">list.select(devs, name, age)
-</code></pre>
-
-<pre><code># $p1
-# $p1$name
-# [1] &quot;Ken&quot;
-# 
-# $p1$age
-# [1] 24
-# 
-# 
-# $p2
-# $p2$name
-# [1] &quot;James&quot;
-# 
-# $p2$age
-# [1] 25
-# 
-# 
-# $p3
-# $p3$name
-# [1] &quot;Penny&quot;
-# 
-# $p3$age
-# [1] 24
-</code></pre>
-
-<pre><code class="r">list.select(devs, name, age, nlang=length(lang))
-</code></pre>
-
-<pre><code># $p1
-# $p1$name
-# [1] &quot;Ken&quot;
-# 
-# $p1$age
-# [1] 24
-# 
-# $p1$nlang
-# [1] 3
-# 
-# 
-# $p2
-# $p2$name
-# [1] &quot;James&quot;
-# 
-# $p2$age
-# [1] 25
-# 
-# $p2$nlang
-# [1] 3
-# 
-# 
-# $p3
-# $p3$name
-# [1] &quot;Penny&quot;
-# 
-# $p3$age
-# [1] 24
-# 
-# $p3$nlang
-# [1] 3
-</code></pre>
-
-<h2>list.iter</h2>
-
-<p>Sometimes we don&#39;t really need the result of a mapping but its side effects. For example, if we only need to print out something about each list member, we don&#39;t need to carry on the output of mapping.</p>
-
-<p><code>list.iter</code> performs iterations over a list and returns nothing.</p>
-
-<pre><code class="r">list.iter(devs, cat(name,&quot;:&quot;,age,&quot;\n&quot;))
-</code></pre>
-
-<pre><code># Ken : 24 
-# James : 25 
-# Penny : 24
+<pre><code># List of 3
+#  $ p1:List of 4
+#   ..$ name    : chr &quot;Ken&quot;
+#   ..$ age     : num 25
+#   ..$ interest: chr [1:3] &quot;reading&quot; &quot;music&quot; &quot;movies&quot;
+#   ..$ lang    :List of 3
+#   .. ..$ r     : num 2
+#   .. ..$ csharp: num 5
+#   .. ..$ python: num 3
+#  $ p2:List of 4
+#   ..$ name    : chr &quot;James&quot;
+#   ..$ age     : num 24
+#   ..$ interest: chr [1:2] &quot;sports&quot; &quot;music&quot;
+#   ..$ lang    :List of 3
+#   .. ..$ r   : num 3
+#   .. ..$ java: num 2
+#   .. ..$ cpp : num 4
+#  $ p3:List of 4
+#   ..$ name    : chr &quot;Penny&quot;
+#   ..$ age     : num 24
+#   ..$ interest: chr [1:2] &quot;movies&quot; &quot;reading&quot;
+#   ..$ lang    :List of 2
+#   .. ..$ r  : num 2
+#   .. ..$ cpp: num 4
 </code></pre>
 
 </body>

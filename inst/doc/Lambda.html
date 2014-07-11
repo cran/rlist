@@ -3,7 +3,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 
-<title>List sorting</title>
+<title>Lambda expression</title>
 
 <!-- Styles for R syntax highlighter -->
 <style type="text/css">
@@ -192,215 +192,207 @@ hr {
 <body>
 <!--
 %\VignetteEngine{knitr}
-%\VignetteIndexEntry{List sorting}
+%\VignetteIndexEntry{Lambda expression}
 -->
 
-<h1>List sorting</h1>
+<h1>Lambda expression</h1>
 
-<p>rlist package provides functions for sorting list members by lambda expression.</p>
+<p>Although the list fields of each member are directly accessible in the expression, sometimes we still need to access the list member itself, usually for its meta-information. Lambda expressions provide a mechanism that allows you to use default or customized meta-symbols to access the meta-information of the list member.</p>
 
-<pre><code class="r">devs &lt;-
-  list(
-    p1=list(name=&quot;Ken&quot;,age=24,
-      interest=c(&quot;reading&quot;,&quot;music&quot;,&quot;movies&quot;),
-      lang=list(r=2,csharp=4,python=3)),
-    p2=list(name=&quot;James&quot;,age=25,
-      interest=c(&quot;sports&quot;,&quot;music&quot;),
-      lang=list(r=3,java=2,cpp=5)),
-    p3=list(name=&quot;Penny&quot;,age=24,
-      interest=c(&quot;movies&quot;,&quot;reading&quot;),
-      lang=list(r=1,cpp=4,python=2)))
+<p>In rlist package, all functions that work with expressions support the following types of lambda expressions.</p>
+
+<ul>
+<li>Implicit lambda expression: An ordinary expression with no special syntax yet the fields of list members are directly accessible. </li>
+<li>Explicit lambda expression:
+
+<ul>
+<li>Univariate lambda expression: In contrast to implicit lambda expression, the symbol that refers to the list member is customized in the following formats:
+
+<ul>
+<li><code>x -&gt; expression</code></li>
+<li><code>f(x) -&gt; expression</code></li>
+</ul></li>
+<li>Multivariate lambda expression: In contrast to univariate lambda expression, the symbols of list member, index, and member name are customized in the following formats:
+
+<ul>
+<li><code>f(x,i) -&gt; expression</code></li>
+<li><code>f(x,i,name) -&gt; expression</code></li>
+</ul></li>
+</ul></li>
+</ul>
+
+<pre><code class="r">library(rlist)
 </code></pre>
 
-<h2>list.order</h2>
+<h2>Implicit lambda expression</h2>
 
-<p><code>list.order</code> evaluates the given lambda expressions and find out the order by default ascendingly. If the values for some members tie, the next values of the next expression, if any, will count.</p>
+<p>Implicit lambda expression is an ordinary expression with no special syntax like <code>~</code> or <code>-&gt;</code>. In this case, meta symbols are implicitly defined in default, that is, <code>.</code> represents the list member, <code>.i</code> represents the index, and <code>.name</code> represents the name of the list member.</p>
 
-<p>To adjust the order, use <code>desc</code> function or simple write a minus operator (<code>-</code>) before the expression.</p>
+<p>For example,</p>
 
-<pre><code class="r">list.order(devs, age)
+<pre><code class="r">x &lt;- list(a=list(x=1,y=2),b=list(x=2,y=3))
+list.map(x,y)
 </code></pre>
 
-<pre><code># [1] 1 3 2
+<pre><code># $a
+# [1] 2
+# 
+# $b
+# [1] 3
 </code></pre>
 
-<pre><code class="r">list.order(devs, length(interest))
+<pre><code class="r">list.map(x,sum(as.numeric(.)))
 </code></pre>
 
-<pre><code># [1] 2 3 1
+<pre><code># $a
+# [1] 3
+# 
+# $b
+# [1] 5
 </code></pre>
 
-<pre><code class="r">list.order(devs, desc(lang$r))
+<p>In the second mapping above, <code>.</code> represents each list member. For the first member, the meta-symbols take the following values:</p>
+
+<pre><code class="r">. = x[[1]] = list(x=1,y=2)
+.i = 1
+.name = &quot;a&quot;
 </code></pre>
 
-<pre><code># [1] 2 1 3
+<h2>Explicit lambda expression</h2>
+
+<p>To use other symbols to represent the metadata of a list member, we can use explicit lambda expressions.</p>
+
+<pre><code class="r">x &lt;- list(a=list(x=1,y=2),b=list(x=2,y=3))
+list.map(x, f(item,index) -&gt; unlist(item) * index)
 </code></pre>
 
-<pre><code class="r">list.order(devs, max(unlist(lang)))
+<pre><code># $a
+# x y 
+# 1 2 
+# 
+# $b
+# x y 
+# 4 6
 </code></pre>
 
-<pre><code># [1] 1 3 2
+<pre><code class="r">list.map(x, f(item,index,name) -&gt; list(name=name,sum=sum(unlist(item))))
 </code></pre>
 
-<pre><code class="r">list.order(devs, desc(length(interest)), desc(lang$r))
+<pre><code># $a
+# $a$name
+# [1] &quot;a&quot;
+# 
+# $a$sum
+# [1] 3
+# 
+# 
+# $b
+# $b$name
+# [1] &quot;b&quot;
+# 
+# $b$sum
+# [1] 5
 </code></pre>
 
-<pre><code># [1] 1 2 3
+<p>For unnamed vector members, it is almost necessary to use lambda expressions.</p>
+
+<pre><code class="r">x &lt;- list(a=c(1,2),b=c(3,4))
+list.map(x,sum(.))
 </code></pre>
 
-<h2>list.sort</h2>
-
-<p><code>list.sort</code> produces a sorted list of the original list members. Its usage is exactly the same as <code>list.order</code>.</p>
-
-<pre><code class="r">str(list.sort(devs, age))
+<pre><code># $a
+# [1] 3
+# 
+# $b
+# [1] 7
 </code></pre>
 
-<pre><code># List of 3
-#  $ p1:List of 4
-#   ..$ name    : chr &quot;Ken&quot;
-#   ..$ age     : num 24
-#   ..$ interest: chr [1:3] &quot;reading&quot; &quot;music&quot; &quot;movies&quot;
-#   ..$ lang    :List of 3
-#   .. ..$ r     : num 2
-#   .. ..$ csharp: num 4
-#   .. ..$ python: num 3
-#  $ p3:List of 4
-#   ..$ name    : chr &quot;Penny&quot;
-#   ..$ age     : num 24
-#   ..$ interest: chr [1:2] &quot;movies&quot; &quot;reading&quot;
-#   ..$ lang    :List of 3
-#   .. ..$ r     : num 1
-#   .. ..$ cpp   : num 4
-#   .. ..$ python: num 2
-#  $ p2:List of 4
-#   ..$ name    : chr &quot;James&quot;
-#   ..$ age     : num 25
-#   ..$ interest: chr [1:2] &quot;sports&quot; &quot;music&quot;
-#   ..$ lang    :List of 3
-#   .. ..$ r   : num 3
-#   .. ..$ java: num 2
-#   .. ..$ cpp : num 5
+<pre><code class="r">list.map(x,item -&gt; sum(item))
 </code></pre>
 
-<pre><code class="r">str(list.sort(devs, length(interest)))
+<pre><code># $a
+# [1] 3
+# 
+# $b
+# [1] 7
 </code></pre>
 
-<pre><code># List of 3
-#  $ p2:List of 4
-#   ..$ name    : chr &quot;James&quot;
-#   ..$ age     : num 25
-#   ..$ interest: chr [1:2] &quot;sports&quot; &quot;music&quot;
-#   ..$ lang    :List of 3
-#   .. ..$ r   : num 3
-#   .. ..$ java: num 2
-#   .. ..$ cpp : num 5
-#  $ p3:List of 4
-#   ..$ name    : chr &quot;Penny&quot;
-#   ..$ age     : num 24
-#   ..$ interest: chr [1:2] &quot;movies&quot; &quot;reading&quot;
-#   ..$ lang    :List of 3
-#   .. ..$ r     : num 1
-#   .. ..$ cpp   : num 4
-#   .. ..$ python: num 2
-#  $ p1:List of 4
-#   ..$ name    : chr &quot;Ken&quot;
-#   ..$ age     : num 24
-#   ..$ interest: chr [1:3] &quot;reading&quot; &quot;music&quot; &quot;movies&quot;
-#   ..$ lang    :List of 3
-#   .. ..$ r     : num 2
-#   .. ..$ csharp: num 4
-#   .. ..$ python: num 3
+<pre><code class="r">list.map(x,f(m,i) -&gt; m+i)
 </code></pre>
 
-<pre><code class="r">str(list.sort(devs, desc(lang$r)))
+<pre><code># $a
+# [1] 2 3
+# 
+# $b
+# [1] 5 6
 </code></pre>
 
-<pre><code># List of 3
-#  $ p2:List of 4
-#   ..$ name    : chr &quot;James&quot;
-#   ..$ age     : num 25
-#   ..$ interest: chr [1:2] &quot;sports&quot; &quot;music&quot;
-#   ..$ lang    :List of 3
-#   .. ..$ r   : num 3
-#   .. ..$ java: num 2
-#   .. ..$ cpp : num 5
-#  $ p1:List of 4
-#   ..$ name    : chr &quot;Ken&quot;
-#   ..$ age     : num 24
-#   ..$ interest: chr [1:3] &quot;reading&quot; &quot;music&quot; &quot;movies&quot;
-#   ..$ lang    :List of 3
-#   .. ..$ r     : num 2
-#   .. ..$ csharp: num 4
-#   .. ..$ python: num 3
-#  $ p3:List of 4
-#   ..$ name    : chr &quot;Penny&quot;
-#   ..$ age     : num 24
-#   ..$ interest: chr [1:2] &quot;movies&quot; &quot;reading&quot;
-#   ..$ lang    :List of 3
-#   .. ..$ r     : num 1
-#   .. ..$ cpp   : num 4
-#   .. ..$ python: num 2
+<p>For named vector members, their name can also be directly used in the expression.</p>
+
+<pre><code class="r">x &lt;- list(a=c(x=1,y=2),b=c(x=3,y=4))
+list.map(x,sum(y))
 </code></pre>
 
-<pre><code class="r">str(list.sort(devs, max(unlist(lang))))
+<pre><code># $a
+# [1] 2
+# 
+# $b
+# [1] 4
 </code></pre>
 
-<pre><code># List of 3
-#  $ p1:List of 4
-#   ..$ name    : chr &quot;Ken&quot;
-#   ..$ age     : num 24
-#   ..$ interest: chr [1:3] &quot;reading&quot; &quot;music&quot; &quot;movies&quot;
-#   ..$ lang    :List of 3
-#   .. ..$ r     : num 2
-#   .. ..$ csharp: num 4
-#   .. ..$ python: num 3
-#  $ p3:List of 4
-#   ..$ name    : chr &quot;Penny&quot;
-#   ..$ age     : num 24
-#   ..$ interest: chr [1:2] &quot;movies&quot; &quot;reading&quot;
-#   ..$ lang    :List of 3
-#   .. ..$ r     : num 1
-#   .. ..$ cpp   : num 4
-#   .. ..$ python: num 2
-#  $ p2:List of 4
-#   ..$ name    : chr &quot;James&quot;
-#   ..$ age     : num 25
-#   ..$ interest: chr [1:2] &quot;sports&quot; &quot;music&quot;
-#   ..$ lang    :List of 3
-#   .. ..$ r   : num 3
-#   .. ..$ java: num 2
-#   .. ..$ cpp : num 5
+<pre><code class="r">list.map(x,x*y)
 </code></pre>
 
-<pre><code class="r">str(list.sort(devs, desc(length(interest)), desc(lang$r)))
+<pre><code># $a
+# [1] 2
+# 
+# $b
+# [1] 12
 </code></pre>
 
-<pre><code># List of 3
-#  $ p1:List of 4
-#   ..$ name    : chr &quot;Ken&quot;
-#   ..$ age     : num 24
-#   ..$ interest: chr [1:3] &quot;reading&quot; &quot;music&quot; &quot;movies&quot;
-#   ..$ lang    :List of 3
-#   .. ..$ r     : num 2
-#   .. ..$ csharp: num 4
-#   .. ..$ python: num 3
-#  $ p2:List of 4
-#   ..$ name    : chr &quot;James&quot;
-#   ..$ age     : num 25
-#   ..$ interest: chr [1:2] &quot;sports&quot; &quot;music&quot;
-#   ..$ lang    :List of 3
-#   .. ..$ r   : num 3
-#   .. ..$ java: num 2
-#   .. ..$ cpp : num 5
-#  $ p3:List of 4
-#   ..$ name    : chr &quot;Penny&quot;
-#   ..$ age     : num 24
-#   ..$ interest: chr [1:2] &quot;movies&quot; &quot;reading&quot;
-#   ..$ lang    :List of 3
-#   .. ..$ r     : num 1
-#   .. ..$ cpp   : num 4
-#   .. ..$ python: num 2
+<pre><code class="r">list.map(x,.i)
 </code></pre>
+
+<pre><code># $a
+# [1] 1
+# 
+# $b
+# [1] 2
+</code></pre>
+
+<pre><code class="r">list.map(x,x+.i)
+</code></pre>
+
+<pre><code># $a
+# [1] 2
+# 
+# $b
+# [1] 5
+</code></pre>
+
+<pre><code class="r">list.map(x,f(.,i) -&gt; . + i)
+</code></pre>
+
+<pre><code># $a
+# x y 
+# 2 3 
+# 
+# $b
+# x y 
+# 5 6
+</code></pre>
+
+<pre><code class="r">list.map(x,.name)
+</code></pre>
+
+<pre><code># $a
+# [1] &quot;a&quot;
+# 
+# $b
+# [1] &quot;b&quot;
+</code></pre>
+
+<p><em>Note that <code>list.select</code> does not support explicit lambda expressions.</em></p>
 
 </body>
 

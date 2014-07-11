@@ -1,8 +1,8 @@
 ## ----, echo = FALSE, message = FALSE-------------------------------------
-library(rlist)
 knitr::opts_chunk$set(comment="#",error=FALSE,tidy=FALSE)
 
 ## ------------------------------------------------------------------------
+library(rlist)
 devs <- 
   list(
     p1=list(name="Ken",age=24,
@@ -35,4 +35,12 @@ list.select(devs, name, age, nlang=length(lang))
 
 ## ------------------------------------------------------------------------
 list.iter(devs, cat(name,":",age,"\n"))
+
+## ------------------------------------------------------------------------
+l1 <- list(p1=list(x=1,y=2), p2=list(x=3,y=4), p3=list(x=1,y=3))
+l2 <- list(2,3,5)
+list.maps(a$x*b+a$y,a=l1,b=l2)
+
+## ------------------------------------------------------------------------
+list.maps(.i + a$x*b+a$y,a=l1,b=l2)
 

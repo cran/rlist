@@ -3,7 +3,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 
-<title>List joining</title>
+<title>List sorting</title>
 
 <!-- Styles for R syntax highlighter -->
 <style type="text/css">
@@ -192,14 +192,15 @@ hr {
 <body>
 <!--
 %\VignetteEngine{knitr}
-%\VignetteIndexEntry{List joining}
+%\VignetteIndexEntry{List sorting}
 -->
 
-<h1>List joining</h1>
+<h1>List sorting</h1>
 
-<p>rlist provides <code>list.join</code> to perform simple joining of two lists, and <code>list.merge</code> to perform modification merge of a series of lists.</p>
+<p>rlist package provides functions for sorting list members by lambda expression.</p>
 
-<pre><code class="r">devs &lt;- 
+<pre><code class="r">library(rlist)
+devs &lt;-
   list(
     p1=list(name=&quot;Ken&quot;,age=24,
       interest=c(&quot;reading&quot;,&quot;music&quot;,&quot;movies&quot;),
@@ -212,20 +213,51 @@ hr {
       lang=list(r=1,cpp=4,python=2)))
 </code></pre>
 
-<h2>list.join</h2>
+<h2>list.order</h2>
 
-<p><code>list.join</code> is used to join two lists by a key evaluated from either a common expression for the two lists or two separate expressions for each list.</p>
+<p><code>list.order</code> evaluates the given lambda expressions and find out the order by default ascending. If the values for some members tie, the next values of the next expression, if any, will count.</p>
 
-<pre><code class="r">newinfo &lt;-
-  list(
-    p1=list(name=&quot;Ken&quot;,email=&quot;ken@xyz.com&quot;),
-    p2=list(name=&quot;Penny&quot;,email=&quot;penny@xyz.com&quot;),
-    p3=list(name=&quot;James&quot;,email=&quot;james@xyz.com&quot;))
-str(list.join(devs,newinfo,name))
+<p>To adjust the order, use <code>desc</code> function or simple write a minus operator (<code>-</code>) before the expression.</p>
+
+<pre><code class="r">list.order(devs, age)
+</code></pre>
+
+<pre><code># [1] 1 3 2
+</code></pre>
+
+<pre><code class="r">list.order(devs, length(interest))
+</code></pre>
+
+<pre><code># [1] 2 3 1
+</code></pre>
+
+<pre><code class="r">list.order(devs, desc(lang$r))
+</code></pre>
+
+<pre><code># [1] 2 1 3
+</code></pre>
+
+<pre><code class="r">list.order(devs, max(unlist(lang)))
+</code></pre>
+
+<pre><code># [1] 1 3 2
+</code></pre>
+
+<pre><code class="r">list.order(devs, desc(length(interest)), desc(lang$r))
+</code></pre>
+
+<pre><code># [1] 1 2 3
+</code></pre>
+
+<h2>list.sort</h2>
+
+<p><code>list.sort</code> produces a sorted list of the original list members. Its usage is exactly the same as <code>list.order</code>.</p>
+
+<pre><code class="r">str(list.sort(devs, age))
 </code></pre>
 
 <pre><code># List of 3
-#  $ p1:List of 5
+#  $ p1:List of 4
 #   ..$ name    : chr &quot;Ken&quot;
 #   ..$ age     : num 24
 #   ..$ interest: chr [1:3] &quot;reading&quot; &quot;music&quot; &quot;movies&quot;
@@ -233,17 +265,7 @@ str(list.join(devs,newinfo,name))
 #   .. ..$ r     : num 2
 #   .. ..$ csharp: num 4
 #   .. ..$ python: num 3
-#   ..$ email   : chr &quot;ken@xyz.com&quot;
-#  $ p2:List of 5
-#   ..$ name    : chr &quot;James&quot;
-#   ..$ age     : num 25
-#   ..$ interest: chr [1:2] &quot;sports&quot; &quot;music&quot;
-#   ..$ lang    :List of 3
-#   .. ..$ r   : num 3
-#   .. ..$ java: num 2
-#   .. ..$ cpp : num 5
-#   ..$ email   : chr &quot;james@xyz.com&quot;
-#  $ p3:List of 5
+#  $ p3:List of 4
 #   ..$ name    : chr &quot;Penny&quot;
 #   ..$ age     : num 24
 #   ..$ interest: chr [1:2] &quot;movies&quot; &quot;reading&quot;
@@ -251,25 +273,113 @@ str(list.join(devs,newinfo,name))
 #   .. ..$ r     : num 1
 #   .. ..$ cpp   : num 4
 #   .. ..$ python: num 2
-#   ..$ email   : chr &quot;penny@xyz.com&quot;
+#  $ p2:List of 4
+#   ..$ name    : chr &quot;James&quot;
+#   ..$ age     : num 25
+#   ..$ interest: chr [1:2] &quot;sports&quot; &quot;music&quot;
+#   ..$ lang    :List of 3
+#   .. ..$ r   : num 3
+#   .. ..$ java: num 2
+#   .. ..$ cpp : num 5
 </code></pre>
 
-<h2>list.merge</h2>
+<pre><code class="r">str(list.sort(devs, length(interest)))
+</code></pre>
 
-<p><code>list.merge</code> is used to recursively merge a series of lists with the later always updates the former. It works with two lists, as shown in the example below, in which a revision is merged with the original list.</p>
+<pre><code># List of 3
+#  $ p2:List of 4
+#   ..$ name    : chr &quot;James&quot;
+#   ..$ age     : num 25
+#   ..$ interest: chr [1:2] &quot;sports&quot; &quot;music&quot;
+#   ..$ lang    :List of 3
+#   .. ..$ r   : num 3
+#   .. ..$ java: num 2
+#   .. ..$ cpp : num 5
+#  $ p3:List of 4
+#   ..$ name    : chr &quot;Penny&quot;
+#   ..$ age     : num 24
+#   ..$ interest: chr [1:2] &quot;movies&quot; &quot;reading&quot;
+#   ..$ lang    :List of 3
+#   .. ..$ r     : num 1
+#   .. ..$ cpp   : num 4
+#   .. ..$ python: num 2
+#  $ p1:List of 4
+#   ..$ name    : chr &quot;Ken&quot;
+#   ..$ age     : num 24
+#   ..$ interest: chr [1:3] &quot;reading&quot; &quot;music&quot; &quot;movies&quot;
+#   ..$ lang    :List of 3
+#   .. ..$ r     : num 2
+#   .. ..$ csharp: num 4
+#   .. ..$ python: num 3
+</code></pre>
 
-<pre><code class="r">rev1 &lt;-
-  list(
-    p1=list(age=25),
-    p2=list(lang=list(r=2,cpp=4)),
-    p3=list(lang=list(r=2,python=NULL)))
-str(list.merge(devs,rev1))
+<pre><code class="r">str(list.sort(devs, desc(lang$r)))
+</code></pre>
+
+<pre><code># List of 3
+#  $ p2:List of 4
+#   ..$ name    : chr &quot;James&quot;
+#   ..$ age     : num 25
+#   ..$ interest: chr [1:2] &quot;sports&quot; &quot;music&quot;
+#   ..$ lang    :List of 3
+#   .. ..$ r   : num 3
+#   .. ..$ java: num 2
+#   .. ..$ cpp : num 5
+#  $ p1:List of 4
+#   ..$ name    : chr &quot;Ken&quot;
+#   ..$ age     : num 24
+#   ..$ interest: chr [1:3] &quot;reading&quot; &quot;music&quot; &quot;movies&quot;
+#   ..$ lang    :List of 3
+#   .. ..$ r     : num 2
+#   .. ..$ csharp: num 4
+#   .. ..$ python: num 3
+#  $ p3:List of 4
+#   ..$ name    : chr &quot;Penny&quot;
+#   ..$ age     : num 24
+#   ..$ interest: chr [1:2] &quot;movies&quot; &quot;reading&quot;
+#   ..$ lang    :List of 3
+#   .. ..$ r     : num 1
+#   .. ..$ cpp   : num 4
+#   .. ..$ python: num 2
+</code></pre>
+
+<pre><code class="r">str(list.sort(devs, max(unlist(lang))))
 </code></pre>
 
 <pre><code># List of 3
 #  $ p1:List of 4
 #   ..$ name    : chr &quot;Ken&quot;
+#   ..$ age     : num 24
+#   ..$ interest: chr [1:3] &quot;reading&quot; &quot;music&quot; &quot;movies&quot;
+#   ..$ lang    :List of 3
+#   .. ..$ r     : num 2
+#   .. ..$ csharp: num 4
+#   .. ..$ python: num 3
+#  $ p3:List of 4
+#   ..$ name    : chr &quot;Penny&quot;
+#   ..$ age     : num 24
+#   ..$ interest: chr [1:2] &quot;movies&quot; &quot;reading&quot;
+#   ..$ lang    :List of 3
+#   .. ..$ r     : num 1
+#   .. ..$ cpp   : num 4
+#   .. ..$ python: num 2
+#  $ p2:List of 4
+#   ..$ name    : chr &quot;James&quot;
 #   ..$ age     : num 25
+#   ..$ interest: chr [1:2] &quot;sports&quot; &quot;music&quot;
+#   ..$ lang    :List of 3
+#   .. ..$ r   : num 3
+#   .. ..$ java: num 2
+#   .. ..$ cpp : num 5
+</code></pre>
+
+<pre><code class="r">str(list.sort(devs, desc(length(interest)), desc(lang$r)))
+</code></pre>
+
+<pre><code># List of 3
+#  $ p1:List of 4
+#   ..$ name    : chr &quot;Ken&quot;
+#   ..$ age     : num 24
 #   ..$ interest: chr [1:3] &quot;reading&quot; &quot;music&quot; &quot;movies&quot;
 #   ..$ lang    :List of 3
 #   .. ..$ r     : num 2
@@ -280,51 +390,17 @@ str(list.merge(devs,rev1))
 #   ..$ age     : num 25
 #   ..$ interest: chr [1:2] &quot;sports&quot; &quot;music&quot;
 #   ..$ lang    :List of 3
-#   .. ..$ r   : num 2
-#   .. ..$ java: num 2
-#   .. ..$ cpp : num 4
-#  $ p3:List of 4
-#   ..$ name    : chr &quot;Penny&quot;
-#   ..$ age     : num 24
-#   ..$ interest: chr [1:2] &quot;movies&quot; &quot;reading&quot;
-#   ..$ lang    :List of 2
-#   .. ..$ r  : num 2
-#   .. ..$ cpp: num 4
-</code></pre>
-
-<p>The function also works with multiple lists. When the second revision is obtained, the three lists can be merged in order.</p>
-
-<pre><code class="r">rev2 &lt;-
-  list(
-    p1=list(lang=list(csharp=5)),
-    p2=list(age=24,lang=list(r=3)))
-str(list.merge(devs,rev1,rev2))
-</code></pre>
-
-<pre><code># List of 3
-#  $ p1:List of 4
-#   ..$ name    : chr &quot;Ken&quot;
-#   ..$ age     : num 25
-#   ..$ interest: chr [1:3] &quot;reading&quot; &quot;music&quot; &quot;movies&quot;
-#   ..$ lang    :List of 3
-#   .. ..$ r     : num 2
-#   .. ..$ csharp: num 5
-#   .. ..$ python: num 3
-#  $ p2:List of 4
-#   ..$ name    : chr &quot;James&quot;
-#   ..$ age     : num 24
-#   ..$ interest: chr [1:2] &quot;sports&quot; &quot;music&quot;
-#   ..$ lang    :List of 3
 #   .. ..$ r   : num 3
 #   .. ..$ java: num 2
-#   .. ..$ cpp : num 4
+#   .. ..$ cpp : num 5
 #  $ p3:List of 4
 #   ..$ name    : chr &quot;Penny&quot;
 #   ..$ age     : num 24
 #   ..$ interest: chr [1:2] &quot;movies&quot; &quot;reading&quot;
-#   ..$ lang    :List of 2
-#   .. ..$ r  : num 2
-#   .. ..$ cpp: num 4
+#   ..$ lang    :List of 3
+#   .. ..$ r     : num 1
+#   .. ..$ cpp   : num 4
+#   .. ..$ python: num 2
 </code></pre>
 
 </body>

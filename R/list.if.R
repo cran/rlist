@@ -2,8 +2,8 @@
 #' satisfies a given condition
 #'
 #' @param .data \code{list}
-#' @param cond A logical expression that specifies the condition
-#' @param use.names Whether to keep the names of list x
+#' @param cond A logical lambda expression
+#' @param use.names \code{logical} Should the names of \code{.data} be kept?
 #' @name list.if
 #' @export
 #' @examples
@@ -15,6 +15,5 @@
 #' list.if(x,min(score$c1,score$c2) >= 8)
 #' }
 list.if <- function(.data,cond,use.names=TRUE) {
-  cond <- substitute(cond)
-  list.if.internal(.data,cond,use.names)
+  list.if.internal(.data,substitute(cond),use.names)
 }

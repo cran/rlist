@@ -1,7 +1,7 @@
 #' Append a list
 #'
 #' @param .data The original list
-#' @param ... A vector or list that is to be appended after \code{x}
+#' @param ... A \code{vector} or \code{list} to append after \code{x}
 #' @name list.append
 #' @export
 #' @examples
@@ -11,5 +11,9 @@
 #' list.append(x,d=4,f=c(2,3))
 #' }
 list.append <- function(.data,...) {
-  c(.data,list(...))
+  if(is.list(.data)) {
+    c(.data,list(...))
+  } else {
+    c(.data,...)
+  }
 }

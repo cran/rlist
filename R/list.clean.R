@@ -1,7 +1,7 @@
 #' Clean a list by a function
 #'
 #' @param .data \code{list}
-#' @param fun The function for cleaning, by default \code{is.null}.
+#' @param fun A logical \code{function} for clean
 #' @name list.clean
 #' @export
 #' @examples
@@ -10,6 +10,6 @@
 #' list.clean(x)
 #' }
 list.clean <- function(.data,
-  fun = function(x) is.null(x) || (is.vector(x) && length(x) == 0L)) {
-  `[<-`(.data,vapply(.data,fun,logical(1L)),NULL)
+  fun = function(x) is.null(x) || length(x) == 0L) {
+  setmembers(.data,vapply(.data,fun,logical(1L)),NULL)
 }

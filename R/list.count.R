@@ -1,7 +1,7 @@
 #' Count the number of members that meet given condition
 #'
 #' @param .data \code{list}
-#' @param cond An \code{expression} that returns a logical value
+#' @param cond A logical lambda expression
 #' @name list.count
 #' @export
 #' @examples
@@ -13,6 +13,5 @@
 #' list.count(x,min(unlist(score)) >= 9)
 #' }
 list.count <- function(.data,cond) {
-  cond <- substitute(cond)
-  length(which(list.if.internal(.data,cond,FALSE)))
+  length(which(list.if.internal(.data,substitute(cond),FALSE)))
 }

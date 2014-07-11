@@ -1,7 +1,7 @@
 #' Update a list by modifying its elements.
 #'
 #' @param .data \code{list}
-#' @param ... The elements to update
+#' @param ... A group of labmda expressions
 #' @param keep.null Should \code{NULL} values be preserved
 #'    for \code{modifyList}
 #' @name list.update
@@ -17,8 +17,8 @@
 #' list.update(x,score=list(min=0,max=10))
 #' }
 list.update <- function(.data,...,keep.null=FALSE) {
-  args <- match.call(expand.dots = FALSE)$`...`
-  items <- lapply(args,list.map.internal,.data=.data,envir=parent.frame())
-  do.call(Map,c(function(.,...)
-    modifyList(.,list(...),keep.null = keep.null),list(.data),items))
+  items <- lapply(dots(...),list.map.internal,
+    .data=.data,envir=parent.frame())
+  do.call(Map,c(function(.data,...)
+    modifyList(.data,list(...),keep.null = keep.null),list(.data),items))
 }
