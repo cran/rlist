@@ -1,55 +1,54 @@
-list.if.function <- function(x) {
-  if(is.logical(x)) {
-    if(length(x) == 1L) x
-    else if(length(x > 1L)) stop("Multiple values are encountered")
-    else NA
-  } else {
-    NA
-  }
+list.map.fun <- function(.data,.expr) {
+  eval(.expr,.list.env(.data),environment())
 }
 
-list.if.internal <- function(.data,cond,use.names=TRUE,envir=parent.frame(2L)) {
-  results <- list.map.internal(.data,cond,list.if.function,envir)
-  unlist(results,use.names = use.names)
-}
-
-list.findi.internal <- function(.data,cond,n,envir=parent.frame(2L)) {
-  l <- lambda(cond)
-  envir <- lambda.env(envir)
-  xnames <- getnames(.data)
-  indices <- integer()
-  for(i in seq_along(.data)) {
-    xi <- .data[[i]]
-    args <- setnames(list(xi,i,xnames[i]),l$symbols)
-    list2env(args,envir)
-    result <- eval(l$expr,list.env(xi),envir)
-    if(length(indices) < n) {
-      if(is.logical(result)) {
-        if(length(result) == 1L && result) {
-          indices <- c(indices,i)
-        } else if(length(result) > 1L) {
-          stop("Multiple values are encountered")
-        }
-      }
-    } else {
-      break
-    }
-  }
-  indices
-}
-
-list.map.internal <- function(.data,expr,fun=unit,envir=parent.frame(2L)) {
+list.map.internal <- function(.data,expr,fun=list.map.fun,envir=parent.frame(2L)) {
+  if(is.null(.data) || length(.data) == 0L) return(.data)
   l <- lambda(expr)
-  enclos <- lambda.env(envir)
-  args <- c(function(.data,...) {
-    list2env(list(...),enclos)
-    fun(eval(l$expr,list.env(.data),enclos))
-  },list(.data),list(.data),list(seq_along(.data)),list(getnames(.data)))
-  names(args) <- c("f",".data",l$symbols)
+  xnames <- getnames(.data,character(1L))
+  environment(fun) <- envir
+  formals(fun) <- setnames(vector("list",.nfsymbol),c(".data",".expr",l$symbols))
+  args <- list(fun,.data,list(l$expr),.data,seq_along(.data),xnames)
   do.call(Map, args)
 }
 
+list.if.fun <- function(.data,.expr) {
+  x <- eval(.expr,.list.env(.data),environment())
+  if(is.logical(x) && length(x) == 1L) x else NA
+}
+
+list.if.internal <- function(.data,cond,envir=parent.frame(2L)) {
+  as.logical(list.map.internal(.data,cond,list.if.fun,envir))
+}
+
+list.findi.fun <- function(.data,.expr) {
+  env <- parent.frame(4L)
+  env$.i <- env$.i + 1L
+  x <- eval(.expr,.list.env(.data),environment())
+  if(is.logical(x) && length(x) == 1L && x) {
+    env$.n <- env$.n + 1L
+    env$.indices <- c(env$.indices, env$.i)
+    if(env$.n == env$n) stop()
+  }
+}
+
+list.findi.internal <- function(.data,cond,n,envir=parent.frame(2L)) {
+  .i <- 0L
+  .n <- 0L
+  .indices <- integer()
+  try(list.map.internal(.data,cond,list.findi.fun,envir),silent = TRUE)
+  .indices
+}
+
+list.while.fun <- function(.data,.expr) {
+  env <- parent.frame(4L)
+  x <- eval(.expr,.list.env(.data),environment())
+  if(is.logical(x) && length(x) == 1L && x) env$.i <- env$.i + 1L
+  else stop()
+}
+
 list.order.internal <- function(.data,args,envir=parent.frame(2L)) {
+  if(is.null(.data) || length(.data) == 0L) return(integer(0L))
   envir <- new.env(parent = envir)
   list2env(list.sort.functions,envir)
   cols <- lapply(args,function(arg) {

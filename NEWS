@@ -1,3 +1,10 @@
+Version 0.2.3 (2014-07-18)
+===
+Improve performance (#26, #27)
+Add `list.flatten` that flattens a nested list to one-level.
+
+
+
 Version 0.2.2 (2014-07-11)
 ===
 Add `list.stack` that binds list members to a data.frame.
@@ -10,6 +17,7 @@ Fixed [#23](https://github.com/renkun-ken/rlist/issues/23)
 Fixed [#25](https://github.com/renkun-ken/rlist/issues/25)
 `list.select` no longer accepts explicit lambda expressions.
 Vignettes updated
+
 
 Version 0.2.1 (2014-07-04)
 ===

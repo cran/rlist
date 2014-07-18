@@ -253,6 +253,44 @@ students %&gt;&gt;%
 # 4  Josh  24     B
 </code></pre>
 
+<h2>Finding prime numbers</h2>
+
+<p>The following can tell whether an integer is a prime number.</p>
+
+<pre><code class="r">is.prime &lt;- function(num) {
+   if (num == 2L) {
+      TRUE
+   } else if (any(num %% 2L:(num-1L) == 0L)) {
+      FALSE
+   } else { 
+      TRUE
+   }
+}
+</code></pre>
+
+<p>To find 50 prime numbers no greater than 1000, we can use <code>list.find()</code>.</p>
+
+<pre><code class="r">list.find(1:1000,is.prime(.),50)
+</code></pre>
+
+<pre><code>#  [1]   2   3   5   7  11  13  17  19  23  29  31  37  41  43  47  53  59
+# [18]  61  67  71  73  79  83  89  97 101 103 107 109 113 127 131 137 139
+# [35] 149 151 157 163 167 173 179 181 191 193 197 199 211 223 227 229
+</code></pre>
+
+<p>To find all prime numbers no greater than 500, we can use <code>list.filter()</code>.</p>
+
+<pre><code class="r">list.filter(1:500,is.prime(.))
+</code></pre>
+
+<pre><code>#  [1]   2   3   5   7  11  13  17  19  23  29  31  37  41  43  47  53  59
+# [18]  61  67  71  73  79  83  89  97 101 103 107 109 113 127 131 137 139
+# [35] 149 151 157 163 167 173 179 181 191 193 197 199 211 223 227 229 233
+# [52] 239 241 251 257 263 269 271 277 281 283 293 307 311 313 317 331 337
+# [69] 347 349 353 359 367 373 379 383 389 397 401 409 419 421 431 433 439
+# [86] 443 449 457 461 463 467 479 487 491 499
+</code></pre>
+
 </body>
 
 </html>
