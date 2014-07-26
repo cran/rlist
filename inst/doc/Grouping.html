@@ -497,6 +497,28 @@ str(list.ungroup(ageGroups))
 #   .. .. ..$ python: num 2
 </code></pre>
 
+<h2>list.common</h2>
+
+<p>This function returns the common cases by evaluting a given expression for all list members.</p>
+
+<p>Get the common interests of all developers.</p>
+
+<pre><code class="r">list.common(devs, interest)
+</code></pre>
+
+<pre><code># character(0)
+</code></pre>
+
+<p>It concludes that no interest are common to every one.</p>
+
+<p>Or get the common programming languages they all use.</p>
+
+<pre><code class="r">list.common(devs, names(lang))
+</code></pre>
+
+<pre><code># [1] &quot;r&quot;
+</code></pre>
+
 <h2>list.table</h2>
 
 <p><code>table</code> function is often used to create a table with multiple dimensions. <code>list.table</code> is its counterpart that creates a table in which each dimension results from an expression.</p>

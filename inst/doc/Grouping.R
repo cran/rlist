@@ -36,5 +36,11 @@ str(list.class(devs, interest))
 str(list.class(devs, names(lang)))
 
 ## ------------------------------------------------------------------------
+list.common(devs, interest)
+
+## ------------------------------------------------------------------------
+list.common(devs, names(lang))
+
+## ------------------------------------------------------------------------
 list.table(devs, interests=length(interest), age)
 
