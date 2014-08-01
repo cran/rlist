@@ -3,7 +3,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 
-<title>Introduction to rlist</title>
+<title>List searching</title>
 
 <!-- Styles for R syntax highlighter -->
 <style type="text/css">
@@ -189,283 +189,312 @@ hr {
 <body>
 <!--
 %\VignetteEngine{knitr}
-%\VignetteIndexEntry{Introduction to rlist}
+%\VignetteIndexEntry{List searching}
 -->
 
-<h1>Introduction to rlist</h1>
+<h1>List searching</h1>
 
-<p>rlist is a set of tools for working with list objects. Its goal is to make it easier to work with lists by providing a wide range of functions on non-tabular data stored in them.</p>
+<p>rlist provides searching capabilities, that is, find values within a list without specifying the key or searching path. <code>list.search</code> handles a variety of search demands. The following is the definition of this function.</p>
 
-<h2>Installation</h2>
-
-<p>Install from CRAN with</p>
-
-<pre><code class="r">install.packages(&quot;rlist&quot;)
+<pre><code class="r">list.search(.data, when, how, what, ...,
+  na.rm = FALSE, classes = class(what), unlist = FALSE)
 </code></pre>
 
-<p>or install the latest development version from GitHub with</p>
+<p>Definition of arguments:</p>
 
-<pre><code class="r">devtools::install_github(&quot;rlist&quot;,&quot;renkun-ken&quot;)
+<ul>
+<li><code>.data</code>: the list to be searched</li>
+<li><code>when</code>: the function to aggregate returned logical vector: <code>all</code> or <code>any</code></li>
+<li><code>how</code>: <code>identical</code>, <code>unidentical</code>, <code>equal</code>, <code>unequal</code>, <code>include</code>,  <code>exclude</code>, <code>like(dist)</code>, or <code>unlike(dist)</code>?</li>
+<li><code>what</code>: the value to search</li>
+<li><code>...</code>: additional parameters passed to <code>how</code> function</li>
+<li><code>na.rm</code>: should <code>when</code> function ignore <code>NA</code> values?</li>
+<li><code>classes</code>: a character vector of the classes to be examined</li>
+<li><code>unlist</code>: should the final result be unlisted?</li>
+</ul>
+
+<h2>Exact search</h2>
+
+<p>Exact search is to find values only by logical examinations. Suppose we search the following list.</p>
+
+<pre><code class="r">x &lt;- list(p1 = list(type=&quot;A&quot;,score=c(c1=9)),
+  p2 = list(type=c(&quot;A&quot;,&quot;B&quot;),score=c(c1=8,c2=9)),
+  p3 = list(type=c(&quot;B&quot;,&quot;C&quot;),score=c(c1=9,c2=7)),
+  p4 = list(type=c(&quot;B&quot;,&quot;C&quot;),score=c(c1=8,c2=NA)))
 </code></pre>
 
-<h2>Functions</h2>
+<h3>Search identical values</h3>
 
-<p>A wide range of functions are provided to work with list objects.</p>
+<p>First, we search all values in the list that is identical to &ldquo;A&rdquo;.</p>
 
-<p>Suppose we have a list of developers, each of which has a name, age, some interests and a list of programming language they use and the number of years they have been using them.</p>
-
-<pre><code class="r">library(rlist)
-devs &lt;- 
-  list(
-    p1=list(name=&quot;Ken&quot;,age=24,
-      interest=c(&quot;reading&quot;,&quot;music&quot;,&quot;movies&quot;),
-      lang=list(r=2,csharp=4,python=3)),
-    p2=list(name=&quot;James&quot;,age=25,
-      interest=c(&quot;sports&quot;,&quot;music&quot;),
-      lang=list(r=3,java=2,cpp=5)),
-    p3=list(name=&quot;Penny&quot;,age=24,
-      interest=c(&quot;movies&quot;,&quot;reading&quot;),
-      lang=list(r=1,cpp=4,python=2)))
-</code></pre>
-
-<h3>Filtering</h3>
-
-<p>Filter members whose age is no less than 25 by calling <code>list.filter</code>.</p>
-
-<pre><code class="r">str(list.filter(devs,age &gt;= 25))
-</code></pre>
-
-<pre><code># List of 1
-#  $ p2:List of 4
-#   ..$ name    : chr &quot;James&quot;
-#   ..$ age     : num 25
-#   ..$ interest: chr [1:2] &quot;sports&quot; &quot;music&quot;
-#   ..$ lang    :List of 3
-#   .. ..$ r   : num 3
-#   .. ..$ java: num 2
-#   .. ..$ cpp : num 5
-</code></pre>
-
-<h3>Mapping</h3>
-
-<p>Get the name of each person by calling <code>list.map</code> that maps each member by an expression.</p>
-
-<pre><code class="r">list.map(devs, name)
+<pre><code class="r">list.search(x, all, identical, &quot;A&quot;)
 </code></pre>
 
 <pre><code># $p1
-# [1] &quot;Ken&quot;
-# 
-# $p2
-# [1] &quot;James&quot;
-# 
-# $p3
-# [1] &quot;Penny&quot;
+# $p1$type
+# [1] &quot;A&quot;
 </code></pre>
 
-<p>Get the programming language each person has been using for the longest time by calling <code>list.map</code>.</p>
+<p>Only values that are identical to character vector <code>&quot;A&quot;</code> will be put in the resulting list. We can also unlist the result.</p>
 
-<pre><code class="r">list.map(devs, sort(unlist(lang),decreasing = T)[1])
+<pre><code class="r">list.search(x, all, identical, &quot;A&quot;, unlist = TRUE)
 </code></pre>
 
-<pre><code># $p1
-# csharp 
-#      4 
-# 
-# $p2
-# cpp 
-#   5 
-# 
-# $p3
-# cpp 
-#   4
+<pre><code># p1.type 
+#     &quot;A&quot;
 </code></pre>
 
-<h3>Selecting</h3>
+<p>Then, we search all values identical to <code>c(&quot;A&quot;,&quot;B&quot;)</code>.</p>
 
-<p>Select the name and age of each member by calling <code>list.select</code>.</p>
-
-<pre><code class="r">str(list.select(devs,name,age))
+<pre><code class="r">list.search(x, all, identical, c(&quot;A&quot;,&quot;B&quot;))
 </code></pre>
 
-<pre><code># List of 3
-#  $ p1:List of 2
-#   ..$ name: chr &quot;Ken&quot;
-#   ..$ age : num 24
-#  $ p2:List of 2
-#   ..$ name: chr &quot;James&quot;
-#   ..$ age : num 25
-#  $ p3:List of 2
-#   ..$ name: chr &quot;Penny&quot;
-#   ..$ age : num 24
+<pre><code># $p2
+# $p2$type
+# [1] &quot;A&quot; &quot;B&quot;
 </code></pre>
 
-<p>Select the name and evaluate the range of the number of years using programming languages.</p>
+<p>Next, we search if there is a numeric vector <code>c(10,8)</code>.</p>
 
-<pre><code class="r">str(list.select(devs,name,score.range=range(unlist(lang))))
+<pre><code class="r">list.search(x, all, identical, c(10,8))
 </code></pre>
 
-<pre><code># List of 3
-#  $ p1:List of 2
-#   ..$ name       : chr &quot;Ken&quot;
-#   ..$ score.range: num [1:2] 2 4
-#  $ p2:List of 2
-#   ..$ name       : chr &quot;James&quot;
-#   ..$ score.range: num [1:2] 2 5
-#  $ p3:List of 2
-#   ..$ name       : chr &quot;Penny&quot;
-#   ..$ score.range: num [1:2] 1 4
+<pre><code># named list()
 </code></pre>
 
-<h3>Grouping</h3>
+<p>The result is none. If you are familiar with how function <code>identical</code> works, you should not feel surprises since this may be the strongest comparer to tell whether two objects are the same: Two objects are identical when and only when they have absolutely the same structure including values and names. That explains why there is no numeric vector like <code>c(10,8)</code> because all numeric vectors in <code>x</code> are named vectors like <code>c(c1=10,c2=8)</code>. </p>
 
-<p>Build a list that contains sublists each represents an age group by calling <code>list.group</code>.</p>
+<p>To compare values between atomic vectors just like using <code>==</code>, we can use <code>allEqual</code>, <code>anyEqual</code>, <code>allUnequal</code>, or <code>anyUnequal</code> as the comparer function.</p>
 
-<pre><code class="r">str(list.group(devs,age))
-</code></pre>
+<h3>Seach equal values</h3>
 
-<pre><code># List of 2
-#  $ 24:List of 2
-#   ..$ p1:List of 4
-#   .. ..$ name    : chr &quot;Ken&quot;
-#   .. ..$ age     : num 24
-#   .. ..$ interest: chr [1:3] &quot;reading&quot; &quot;music&quot; &quot;movies&quot;
-#   .. ..$ lang    :List of 3
-#   .. .. ..$ r     : num 2
-#   .. .. ..$ csharp: num 4
-#   .. .. ..$ python: num 3
-#   ..$ p3:List of 4
-#   .. ..$ name    : chr &quot;Penny&quot;
-#   .. ..$ age     : num 24
-#   .. ..$ interest: chr [1:2] &quot;movies&quot; &quot;reading&quot;
-#   .. ..$ lang    :List of 3
-#   .. .. ..$ r     : num 1
-#   .. .. ..$ cpp   : num 4
-#   .. .. ..$ python: num 2
-#  $ 25:List of 1
-#   ..$ p2:List of 4
-#   .. ..$ name    : chr &quot;James&quot;
-#   .. ..$ age     : num 25
-#   .. ..$ interest: chr [1:2] &quot;sports&quot; &quot;music&quot;
-#   .. ..$ lang    :List of 3
-#   .. .. ..$ r   : num 3
-#   .. .. ..$ java: num 2
-#   .. .. ..$ cpp : num 5
-</code></pre>
+<p>Search length-1 numeric vectors all equal to 9.</p>
 
-<h3>Sorting</h3>
-
-<p>Sort the developers by the number of interests in descending order, then by the number of years they have been using R in descending order by calling <code>list.sort</code>.</p>
-
-<pre><code class="r">sorted &lt;- list.sort(devs,desc(length(interest)),desc(lang$r))
-list.map(sorted,name)
+<pre><code class="r">list.search(x, all, equal, 9)
 </code></pre>
 
 <pre><code># $p1
-# [1] &quot;Ken&quot;
+# $p1$score
+# c1 
+#  9
+</code></pre>
+
+<p>Search length-2 numeric vectors all equal to <code>c(8,9)</code>.</p>
+
+<pre><code class="r">list.search(x, all, equal, c(8,9))
+</code></pre>
+
+<pre><code># $p2
+# $p2$score
+# c1 c2 
+#  8  9
+</code></pre>
+
+<p>Search length-2 numeric vectors all equal to <code>c(8,9)</code> ignoring <code>NA</code>.</p>
+
+<pre><code class="r">list.search(x, all, equal, c(8,9), na.rm = TRUE)
+</code></pre>
+
+<pre><code># $p2
+# $p2$score
+# c1 c2 
+#  8  9 
 # 
-# $p2
-# [1] &quot;James&quot;
+# 
+# $p4
+# $p4$score
+# c1 c2 
+#  8 NA
+</code></pre>
+
+<p>Search length-1 character vectors in which any value equals &ldquo;A&rdquo;.</p>
+
+<pre><code class="r">list.search(x, any, equal, &quot;A&quot;)
+</code></pre>
+
+<pre><code># $p1
+# $p1$type
+# [1] &quot;A&quot;
+</code></pre>
+
+<p>Search length-1 numeric vectors in which any value equals 8.</p>
+
+<pre><code class="r">list.search(x, any, equal, 8)
+</code></pre>
+
+<pre><code># named list()
+</code></pre>
+
+<p>Search length-2 numeric vectors <code>c(x,y)</code> for which any correspondent values are equal, that is, <code>any(c(x,y)==c(8,9))</code> is <code>TRUE</code>.</p>
+
+<pre><code class="r">list.search(x, any, equal, c(8,9))
+</code></pre>
+
+<pre><code># $p2
+# $p2$score
+# c1 c2 
+#  8  9 
+# 
+# 
+# $p4
+# $p4$score
+# c1 c2 
+#  8 NA
+</code></pre>
+
+<p>Search all numeric vectors in which both 8 and 9 are included.</p>
+
+<pre><code class="r">list.search(x, all, include, c(8,9))
+</code></pre>
+
+<pre><code># $p2
+# $p2$score
+# c1 c2 
+#  8  9
+</code></pre>
+
+<p>Search all numeric vectors in which any of 7, 8, or 10 is included.</p>
+
+<pre><code class="r">list.search(x, any, include, c(7,8,10))
+</code></pre>
+
+<pre><code># $p2
+# $p2$score
+# c1 c2 
+#  8  9 
+# 
 # 
 # $p3
-# [1] &quot;Penny&quot;
+# $p3$score
+# c1 c2 
+#  9  7 
+# 
+# 
+# $p4
+# $p4$score
+# c1 c2 
+#  8 NA
 </code></pre>
 
-<h3>Updating</h3>
+<h2>Fuzzy search</h2>
 
-<p>Use <code>list.update</code> to update the list by removing <code>age</code> and <code>lang</code> columns and introducing the number of languages each member uses as <code>nlang</code>.</p>
+<p>The comparison is flexible enough to support fuzzy searching using functions provided by <a href="http://cran.r-project.org/web/packages/stringdist/index.html"><code>stringdist</code></a> package. Consider the following list.</p>
 
-<pre><code class="r">str(list.update(devs,age=NULL,lang=NULL,nlang=length(lang)))
+<pre><code class="r">x &lt;- list(
+    p1 = list(name=&quot;Ken&quot;,age=24),
+    p2 = list(name=&quot;Kent&quot;,age=26),
+    p3 = list(name=&quot;Sam&quot;,age=24),
+    p4 = list(name=&quot;Keynes&quot;,age=30),
+    p5 = list(name=&quot;Kwen&quot;,age=31))
 </code></pre>
 
-<pre><code># List of 3
-#  $ p1:List of 3
-#   ..$ name    : chr &quot;Ken&quot;
-#   ..$ interest: chr [1:3] &quot;reading&quot; &quot;music&quot; &quot;movies&quot;
-#   ..$ nlang   : int 3
-#  $ p2:List of 3
-#   ..$ name    : chr &quot;James&quot;
-#   ..$ interest: chr [1:2] &quot;sports&quot; &quot;music&quot;
-#   ..$ nlang   : int 3
-#  $ p3:List of 3
-#   ..$ name    : chr &quot;Penny&quot;
-#   ..$ interest: chr [1:2] &quot;movies&quot; &quot;reading&quot;
-#   ..$ nlang   : int 3
+<p>rlist&#39;s built-in functions <code>like(dist,...)</code> and <code>unlike(dist,...)</code> that internally call <code>stringdist::stringdist</code> handle fuzzy search to meet a wide range of demands. </p>
+
+<p>For both functions, <code>dist</code> means the maximum string distance between the actual value in the list and the search term you specify, and <code>...</code> is the additional parameters passed to their internally called functions. More specifically,</p>
+
+<ul>
+<li><code>like(1)</code> means the string distances of the values in the character vector must be no greater than one.</li>
+<li><code>unlike(1)</code> means the string distances of the values in the character vector must be no less than one.</li>
+</ul>
+
+<p>For example, if we want to find out names similar with <code>&quot;Ken&quot;</code> with maximum distance 1, we have to specify <code>fun = like(1)</code>. Since the names are single-valued, it does not matter whether to choose <code>all</code> or <code>any</code>.</p>
+
+<pre><code class="r">list.search(x, any, like(1), &quot;ken&quot;, unlist = TRUE)
 </code></pre>
 
-<h3>More functions</h3>
+<pre><code># p1.name 
+#   &quot;Ken&quot;
+</code></pre>
 
-<p>Much more functions are provided than the examples show. Please read the documentation of the package.</p>
+<p>If the distance constraint is too tight, set a greater value.</p>
 
-<h3>Working with pipeline</h3>
+<pre><code class="r">list.search(x, any, like(2), &quot;ken&quot;, unlist = TRUE)
+</code></pre>
 
-<p>Pipeline operators may hugely improve the readability of the code especially when a chain of commands are executed. <a href="http://renkun.me/pipeR">pipeR package</a> is recommended to co-work with this package.</p>
+<pre><code># p1.name p2.name p5.name 
+#   &quot;Ken&quot;  &quot;Kent&quot;  &quot;Kwen&quot;
+</code></pre>
 
-<p>If we want to know the developers whose age is no more than 24 and create a data frame where they are sorted by the number of years using R in descending order and each row tells us the name, years of using R, and the longest time using a language they know.</p>
+<p>Suppose we are working with the following data in which names becomes length-2 character vectors.</p>
+
+<pre><code class="r">x &lt;- list(
+    p1 = list(name=c(&quot;Ken&quot;, &quot;Ren&quot;),age=24),
+    p2 = list(name=c(&quot;Kent&quot;, &quot;Potter&quot;),age=26),
+    p3 = list(name=c(&quot;Sam&quot;, &quot;Lee&quot;),age=24),
+    p4 = list(name=c(&quot;Keynes&quot;, &quot;Bond&quot;),age=30),
+    p5 = list(name=c(&quot;Kwen&quot;, &quot;Hu&quot;),age=31))
+</code></pre>
+
+<p>Search all character vectors in which any element is like &ldquo;Ken&rdquo; within string distance 1.</p>
+
+<pre><code class="r">list.search(x, any, like(1), &quot;Ken&quot;)
+</code></pre>
+
+<pre><code># $p1
+# $p1$name
+# [1] &quot;Ken&quot; &quot;Ren&quot;
+# 
+# 
+# $p2
+# $p2$name
+# [1] &quot;Kent&quot;   &quot;Potter&quot;
+# 
+# 
+# $p5
+# $p5$name
+# [1] &quot;Kwen&quot; &quot;Hu&quot;
+</code></pre>
+
+<p>Search all character vectors in which all elements are unlike &ldquo;Ken&rdquo; due to string distance no less than 2.</p>
+
+<pre><code class="r">list.search(x, all, unlike(2), &quot;Ken&quot;)
+</code></pre>
+
+<pre><code># $p3
+# $p3$name
+# [1] &quot;Sam&quot; &quot;Lee&quot;
+# 
+# 
+# $p4
+# $p4$name
+# [1] &quot;Keynes&quot; &quot;Bond&quot;
+</code></pre>
+
+<p>Search all character vectors <code>c(x,y)</code> like <code>c(&quot;Ken&quot;,&quot;Hu&quot;)</code> together with both string distance no greater than 2, that ,is, the distances between <code>x</code> and &ldquo;Ken&rdquo; as well as that between <code>y</code> and &ldquo;Hu&rdquo; should be no greater than 2.</p>
+
+<pre><code class="r">list.search(x, all, like(2), c(&quot;Ken&quot;,&quot;Hu&quot;))
+</code></pre>
+
+<pre><code># $p5
+# $p5$name
+# [1] &quot;Kwen&quot; &quot;Hu&quot;
+</code></pre>
+
+<h2>Fuzzy filtering</h2>
+
+<p>The fuzzy search functions also work with filtering functions.</p>
+
+<p>Consider the following data.</p>
+
+<pre><code class="r">x &lt;- list(
+    p1 = list(name=c(&quot;Ken&quot;, &quot;Ren&quot;),age=24),
+    p2 = list(name=c(&quot;Kent&quot;, &quot;Potter&quot;),age=26),
+    p3 = list(name=c(&quot;Sam&quot;, &quot;Lee&quot;),age=24),
+    p4 = list(name=c(&quot;Keynes&quot;, &quot;Bond&quot;),age=30),
+    p5 = list(name=c(&quot;Kwen&quot;, &quot;Hu&quot;),age=31))
+</code></pre>
+
+<p>We can also use fuzzy search compares with <code>list.filter</code>. For example, filter all list members whose <code>name</code> has any character value like <code>Ken</code> with maximum distance 1, and output their pasted names as a named character vector. Here we use pipeline.</p>
 
 <pre><code class="r">library(pipeR)
-devs %&gt;&gt;%
-  list.filter(age &lt;= 24) %&gt;&gt;%
-  list.sort(desc(lang$r)) %&gt;&gt;%
-  list.map(data.frame(name=name,r=lang$r,
-    longest=max(unlist(lang)))) %&gt;&gt;%
-  list.rbind
+x %&gt;&gt;%
+  list.filter(any(like(1)(name,&quot;Ken&quot;))) %&gt;&gt;%
+  list.mapv(paste(name,collapse = &quot; &quot;))
 </code></pre>
 
-<pre><code>#     name r longest
-# p1   Ken 2       4
-# p3 Penny 1       4
+<pre><code>#            p1            p2            p5 
+#     &quot;Ken Ren&quot; &quot;Kent Potter&quot;     &quot;Kwen Hu&quot;
 </code></pre>
-
-<h3>Lambda expression</h3>
-
-<p>Most functions in this package supports lambda expressions like <code>x ~ f(x)</code> or <code>x -&gt; f(x)</code> where <code>x</code> refers to the list member itself. Otherwise, <code>.</code> will by default be used to represent it.</p>
-
-<pre><code class="r">nums &lt;- list(a=c(1,2,3),b=c(2,3,4),c=c(3,4,5))
-nums %&gt;&gt;%
-  list.map(data.frame(min=min(.),max=max(.))) %&gt;&gt;%
-  list.rbind
-</code></pre>
-
-<pre><code>#   min max
-# a   1   3
-# b   2   4
-# c   3   5
-</code></pre>
-
-<pre><code class="r">nums %&gt;&gt;%
-  list.map(x ~ sum(x))
-</code></pre>
-
-<pre><code># $a
-# [1] 6
-# 
-# $b
-# [1] 9
-# 
-# $c
-# [1] 12
-</code></pre>
-
-<pre><code class="r">nums %&gt;&gt;%
-  list.filter(x -&gt; mean(x)&gt;=3)
-</code></pre>
-
-<pre><code># $b
-# [1] 2 3 4
-# 
-# $c
-# [1] 3 4 5
-</code></pre>
-
-<h2>Help overview</h2>
-
-<pre><code class="r">help(package = rlist)
-</code></pre>
-
-<h2>License</h2>
-
-<p>This package is under <a href="http://opensource.org/licenses/MIT">MIT License</a>.</p>
 
 </body>
 

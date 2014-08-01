@@ -4,17 +4,15 @@
 
 [![Build Status](https://travis-ci.org/renkun-ken/rlist.png?branch=master)](https://travis-ci.org/renkun-ken/rlist)
 
-rlist is a set of tools for working with list objects. It has two main goals:
+rlist is a set of tools for working with list objects. Its goal is to make it easier to work with lists by providing a wide range of functions on non-tabular data stored in them.
 
-- Make it easier to work with lists
-- Capitalize the ability that lists store non-relational data
-- Perform a wide range of functions on non-relational data stored in lists
+Currently, this package supports list filtering, mapping, grouping, sorting, updating, searching, file input/output, and many other functions. It implements collection pipeline and strongly recommends functional programming style in list operations.
 
 [Release notes](https://github.com/renkun-ken/rlist/releases)
 
 ## Installation
 
-You can install the lastest released version from [CRAN](http://cran.r-project.org/web/packages/rlist/) with
+You can install the latest released version from [CRAN](http://cran.r-project.org/web/packages/rlist/) with
 
 ```r
 install.packages("rlist")
@@ -163,6 +161,7 @@ The package also provides detailed vignettes for most functions.
 - [List Grouping](http://cran.r-project.org/web/packages/rlist/vignettes/Grouping.html)
 - [List Joining](http://cran.r-project.org/web/packages/rlist/vignettes/Joining.html)
 - [List Updating](http://cran.r-project.org/web/packages/rlist/vignettes/Updating.html)
+- [List Searching](http://cran.r-project.org/web/packages/rlist/vignettes/Searching.html)
 - [List Input/Output](http://cran.r-project.org/web/packages/rlist/vignettes/IO.html)
 - [Lambda expressions](http://cran.r-project.org/web/packages/rlist/vignettes/Lambda.html)
 - [Examples](http://cran.r-project.org/web/packages/rlist/vignettes/Examples.html)
