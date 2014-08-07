@@ -6,6 +6,7 @@
 #'    same to \code{xkey} if \code{NULL} is taken
 #' @param ... The additional parameters passed to \code{merge.data.frame}
 #' @param keep.order Should the order of \code{x} be kept?
+#' @param envir The environment to evaluate mapping function
 #' @name list.join
 #' @export
 #' @examples
@@ -15,11 +16,12 @@
 #'        p3=list(name="Jenny",age=20))
 #' l2 <- list(p1=list(name="Jenny",age=20,type="A"),
 #'        p2=list(name="Ken",age=20,type="B"),
-#'        p3=list(name="James",age=21,type="A"))
+#'        p3=list(name="James",age=22,type="A"))
 #' list.join(l1,l2,name)
-#' list.join(l1,l2,.["name","age"])
+#' list.join(l1,l2,.[c("name","age")])
 #' }
-list.join <- function(x,y,xkey,ykey=NULL,...,keep.order=TRUE) {
+list.join <- function(x,y,xkey,ykey=NULL,...,keep.order=TRUE,
+  envir=parent.frame()) {
   sxkey <- substitute(xkey)
   sykey <- substitute(ykey)
 
@@ -34,8 +36,8 @@ list.join <- function(x,y,xkey,ykey=NULL,...,keep.order=TRUE) {
     dfsykey <- substitute(data.frame(ykey))
   }
 
-  xkeys.list <- list.map.internal(x,dfsxkey)
-  ykeys.list <- list.map.internal(y,dfsykey)
+  xkeys.list <- list.map.internal(x,dfsxkey,envir = envir)
+  ykeys.list <- list.map.internal(y,dfsykey,envir = envir)
   xkeys.df <- list.rbind(xkeys.list)
   ykeys.df <- list.rbind(ykeys.list)
   if(is.name(sxkey)) colnames(xkeys.df) <- as.character(sxkey)
@@ -46,7 +48,7 @@ list.join <- function(x,y,xkey,ykey=NULL,...,keep.order=TRUE) {
 
   xkeys <- cbind(.xi=seq_along(xkeys.list),xkeys.df)
   ykeys <- cbind(.yi=seq_along(ykeys.list),ykeys.df)
-  df <- merge.data.frame(xkeys,ykeys,by=colnames(xkeys)[-1],...)
+  df <- merge.data.frame(xkeys,ykeys,by=colnames(xkeys)[-1L],...)
   if(keep.order) df <- df[order(df$.xi),]
   Map(modifyList,x[df$.xi],y[df$.yi])
 }

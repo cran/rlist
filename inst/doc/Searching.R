@@ -1,8 +1,5 @@
 ## ----, echo = FALSE, message = FALSE-------------------------------------
 knitr::opts_chunk$set(comment="#",error=FALSE,tidy=FALSE)
-funcall <- function(fun) {
-  deparse(as.call(c(substitute(fun),formals(fun))))
-}
 
 ## ------------------------------------------------------------------------
 x <- list(p1 = list(type="A",score=c(c1=9)),
@@ -11,40 +8,40 @@ x <- list(p1 = list(type="A",score=c(c1=9)),
   p4 = list(type=c("B","C"),score=c(c1=8,c2=NA)))
 
 ## ------------------------------------------------------------------------
-list.search(x, all, identical, "A")
+list.search(x, equal("A",exactly = TRUE))
 
 ## ------------------------------------------------------------------------
-list.search(x, all, identical, "A", unlist = TRUE)
+list.search(x, equal("A",exactly = TRUE), unlist = TRUE)
 
 ## ------------------------------------------------------------------------
-list.search(x, all, identical, c("A","B"))
+list.search(x, equal(c("A","B"), exactly = TRUE))
 
 ## ------------------------------------------------------------------------
-list.search(x, all, identical, c(10,8))
+list.search(x, equal(c(9,7),exactly = TRUE))
 
 ## ------------------------------------------------------------------------
-list.search(x, all, equal, 9)
+list.search(x, equal(9))
 
 ## ------------------------------------------------------------------------
-list.search(x, all, equal, c(8,9))
+list.search(x, all(equal(c(8,9))))
 
 ## ------------------------------------------------------------------------
-list.search(x, all, equal, c(8,9), na.rm = TRUE)
+list.search(x, all(equal(c(8,9)), na.rm = TRUE))
 
 ## ------------------------------------------------------------------------
-list.search(x, any, equal, "A")
+list.search(x, equal("A"))
 
 ## ------------------------------------------------------------------------
-list.search(x, any, equal, 8)
+list.search(x, equal(8))
 
 ## ------------------------------------------------------------------------
-list.search(x, any, equal, c(8,9))
+list.search(x, any(equal(c(8,9))))
 
 ## ------------------------------------------------------------------------
-list.search(x, all, include, c(8,9))
+list.search(x, all(equal(c(8,9),include = TRUE)))
 
 ## ------------------------------------------------------------------------
-list.search(x, any, include, c(7,8,10))
+list.search(x, any(equal(c(7,8,10),include = TRUE)))
 
 ## ------------------------------------------------------------------------
 x <- list(
@@ -55,10 +52,22 @@ x <- list(
     p5 = list(name="Kwen",age=31))
 
 ## ------------------------------------------------------------------------
-list.search(x, any, like(1), "ken", unlist = TRUE)
+equal("a","b",dist = 1)
 
 ## ------------------------------------------------------------------------
-list.search(x, any, like(2), "ken", unlist = TRUE)
+equal("a","hello",dist = 1)
+
+## ------------------------------------------------------------------------
+equal("a","hello",dist = 4, method = "dl")
+
+## ------------------------------------------------------------------------
+list.search(x, equal("ken", dist = 1), "character", unlist = TRUE)
+
+## ------------------------------------------------------------------------
+equal(12345,"1234",dist = 1)
+
+## ------------------------------------------------------------------------
+list.search(x, equal("ken", dist = 2), "character", unlist = TRUE)
 
 ## ------------------------------------------------------------------------
 x <- list(
@@ -69,13 +78,13 @@ x <- list(
     p5 = list(name=c("Kwen", "Hu"),age=31))
 
 ## ------------------------------------------------------------------------
-list.search(x, any, like(1), "Ken")
+list.search(x, any(equal("Ken", dist = 1)), "character")
 
 ## ------------------------------------------------------------------------
-list.search(x, all, unlike(2), "Ken")
+list.search(x, all(!equal("Ken", dist = 2)), "character")
 
 ## ------------------------------------------------------------------------
-list.search(x, all, like(2), c("Ken","Hu"))
+list.search(x, all(equal(c("Ken","Hu"), dist = 2)), "character")
 
 ## ------------------------------------------------------------------------
 x <- list(
@@ -88,6 +97,6 @@ x <- list(
 ## ------------------------------------------------------------------------
 library(pipeR)
 x %>>%
-  list.filter(any(like(1)(name,"Ken"))) %>>%
+  list.filter(any(equal("Ken",name,dist = 1))) %>>%
   list.mapv(paste(name,collapse = " "))
 

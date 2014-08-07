@@ -3,7 +3,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 
-<title>List searching</title>
+<title>List environment</title>
 
 <!-- Styles for R syntax highlighter -->
 <style type="text/css">
@@ -189,325 +189,85 @@ hr {
 <body>
 <!--
 %\VignetteEngine{knitr}
-%\VignetteIndexEntry{List searching}
+%\VignetteIndexEntry{List environment}
 -->
 
-<h1>List searching</h1>
+<h1>List environment</h1>
 
-<p>rlist provides searching capabilities, that is, find values within a list recursively. <code>list.search</code> handles a variety of search demands. The following is the definition of this function.</p>
+<p>List environment is an alternative construct designed for easier command chaining. <code>List()</code> function wraps a list within an environment where almost all functions in this package are defined but result in the next List environment for further operations.</p>
 
-<pre><code class="r">list.search(.data, expr, classes = &quot;ANY&quot;, n = Inf, unlist = FALSE)
+<p>Suppose we work with the following list.</p>
+
+<pre><code class="r">devs &lt;- 
+  list(
+    p1=list(name=&quot;Ken&quot;,age=24,
+      interest=c(&quot;reading&quot;,&quot;music&quot;,&quot;movies&quot;),
+      lang=list(r=2,csharp=4,python=3)),
+    p2=list(name=&quot;James&quot;,age=25,
+      interest=c(&quot;sports&quot;,&quot;music&quot;),
+      lang=list(r=3,java=2,cpp=5)),
+    p3=list(name=&quot;Penny&quot;,age=24,
+      interest=c(&quot;movies&quot;,&quot;reading&quot;),
+      lang=list(r=1,cpp=4,python=2)))
 </code></pre>
 
-<p>Definition of arguments:</p>
+<p>To create a <code>List environment</code>, run</p>
 
-<ul>
-<li><code>.data</code>: the list to be searched</li>
-<li><code>expr</code>: a lambda expression with respect to value that returns a single-valued logical vector. In the expression, <code>equal()</code> is designed for robust logical and fuzzy comparison between two objects.</li>
-<li><code>classes</code>: a character vector of class names that restrict the search. By default, the range is unrestricted by taking value <code>&quot;ANY&quot;</code>.</li>
-<li><code>n</code>: an integer indicating the maximum number of results to return.</li>
-<li><code>unlist</code>: should the final result be unlisted?</li>
-</ul>
-
-<h2>Exact search</h2>
-
-<p>Exact search is to find values only by logical examinations. Suppose we search the following list.</p>
-
-<pre><code class="r">x &lt;- list(p1 = list(type=&quot;A&quot;,score=c(c1=9)),
-  p2 = list(type=c(&quot;A&quot;,&quot;B&quot;),score=c(c1=8,c2=9)),
-  p3 = list(type=c(&quot;B&quot;,&quot;C&quot;),score=c(c1=9,c2=7)),
-  p4 = list(type=c(&quot;B&quot;,&quot;C&quot;),score=c(c1=8,c2=NA)))
+<pre><code class="r">m &lt;- List(devs)
 </code></pre>
 
-<h3>Search exact values</h3>
+<p>then we can operate the environment-based object <code>m</code> with <code>map()</code>, <code>filter()</code> and other functions, or extract the inner data with <code>m$data</code>. All inner functions return <code>List environment</code>, which facilities command chaining.</p>
 
-<p>First, we search all values in the list that is exactly identical to &ldquo;A&rdquo;.</p>
+<p>For example, map each member to their name.</p>
 
-<pre><code class="r">list.search(x, equal(&quot;A&quot;,exactly = TRUE))
+<pre><code class="r">m$map(name)
 </code></pre>
 
-<pre><code># $p1
-# $p1$type
-# [1] &quot;A&quot;
-</code></pre>
-
-<p>Only values that are identical to character vector <code>&quot;A&quot;</code> will be put in the resulting list. We can also unlist the result.</p>
-
-<pre><code class="r">list.search(x, equal(&quot;A&quot;,exactly = TRUE), unlist = TRUE)
-</code></pre>
-
-<pre><code># p1.type 
-#     &quot;A&quot;
-</code></pre>
-
-<p>Then, we search all values identical to <code>c(&quot;A&quot;,&quot;B&quot;)</code>.</p>
-
-<pre><code class="r">list.search(x, equal(c(&quot;A&quot;,&quot;B&quot;), exactly = TRUE))
-</code></pre>
-
-<pre><code># $p2
-# $p2$type
-# [1] &quot;A&quot; &quot;B&quot;
-</code></pre>
-
-<p>Next, we search values exactly identical to numeric vector <code>c(9,7)</code>.</p>
-
-<pre><code class="r">list.search(x, equal(c(9,7),exactly = TRUE))
-</code></pre>
-
-<pre><code># named list()
-</code></pre>
-
-<p>The result is none. If you are familiar with how function <code>identical</code> works, you should not feel surprised since this may be the strongest comparer to tell whether two objects are the same: Two objects are identical when and only when they have absolutely the same structure including values and names. And <code>exact()</code> is a wrapper function of <code>identical()</code>. That explains why there is no numeric vector exactly identical to <code>c(9,7)</code> because all numeric vectors in <code>x</code> also have names <code>c1</code> and <code>c2</code>.</p>
-
-<p>To compare values between atomic vectors just like using <code>==</code>, we can use <code>equal</code> as comparer function, which only compare vectors with the same mode and equal length.</p>
-
-<h3>Seach equal values</h3>
-
-<p>Search length-1 numeric vectors equal to 9.</p>
-
-<pre><code class="r">list.search(x, equal(9))
-</code></pre>
-
-<pre><code># $p1
-# $p1$score
-# c1 
-#  9
-</code></pre>
-
-<p>Search length-2 numeric vectors all values equal to <code>c(8,9)</code> respectively.</p>
-
-<pre><code class="r">list.search(x, all(equal(c(8,9))))
-</code></pre>
-
-<pre><code># $p2
-# $p2$score
-# c1 c2 
-#  8  9
-</code></pre>
-
-<p>Search length-2 numeric vectors all equal to <code>c(8,9)</code> ignoring <code>NA</code>.</p>
-
-<pre><code class="r">list.search(x, all(equal(c(8,9)), na.rm = TRUE))
-</code></pre>
-
-<pre><code># $p2
-# $p2$score
-# c1 c2 
-#  8  9 
-# 
-# 
-# $p4
-# $p4$score
-# c1 c2 
-#  8 NA
-</code></pre>
-
-<p>Search length-1 character vectors equal to &ldquo;A&rdquo;.</p>
-
-<pre><code class="r">list.search(x, equal(&quot;A&quot;))
-</code></pre>
-
-<pre><code># $p1
-# $p1$type
-# [1] &quot;A&quot;
-</code></pre>
-
-<p>Search length-1 numeric vectors equal to 8.</p>
-
-<pre><code class="r">list.search(x, equal(8))
-</code></pre>
-
-<pre><code># named list()
-</code></pre>
-
-<p>Search length-2 numeric vectors <code>c(x,y)</code> for which any correspondent values are equal, that is, <code>any(c(x,y)==c(8,9))</code> is <code>TRUE</code>.</p>
-
-<pre><code class="r">list.search(x, any(equal(c(8,9))))
-</code></pre>
-
-<pre><code># $p2
-# $p2$score
-# c1 c2 
-#  8  9 
-# 
-# 
-# $p4
-# $p4$score
-# c1 c2 
-#  8 NA
-</code></pre>
-
-<p>Search all numeric vectors in which both 8 and 9 are included.</p>
-
-<pre><code class="r">list.search(x, all(equal(c(8,9),include = TRUE)))
-</code></pre>
-
-<pre><code># $p2
-# $p2$score
-# c1 c2 
-#  8  9
-</code></pre>
-
-<p>Search all numeric vectors in which any of 7, 8, or 10 is included.</p>
-
-<pre><code class="r">list.search(x, any(equal(c(7,8,10),include = TRUE)))
-</code></pre>
-
-<pre><code># $p2
-# $p2$score
-# c1 c2 
-#  8  9 
-# 
-# 
-# $p3
-# $p3$score
-# c1 c2 
-#  9  7 
-# 
-# 
-# $p4
-# $p4$score
-# c1 c2 
-#  8 NA
-</code></pre>
-
-<h2>Fuzzy search</h2>
-
-<p>The comparison is flexible enough to support fuzzy searching using functions provided by <a href="http://cran.r-project.org/web/packages/stringdist/index.html"><code>stringdist</code></a> package. Consider the following list.</p>
-
-<pre><code class="r">x &lt;- list(
-    p1 = list(name=&quot;Ken&quot;,age=24),
-    p2 = list(name=&quot;Kent&quot;,age=26),
-    p3 = list(name=&quot;Sam&quot;,age=24),
-    p4 = list(name=&quot;Keynes&quot;,age=30),
-    p5 = list(name=&quot;Kwen&quot;,age=31))
-</code></pre>
-
-<p>rlist&#39;s built-in function <code>equal()</code> calls <code>stringdist::stringdist</code> internally to handle fuzzy search demands when <code>dist =</code> is given a numeric value. It tells whether the difference between two strings is no greater than a given value. Here are some examples for the function.</p>
-
-<pre><code class="r">equal(&quot;a&quot;,&quot;b&quot;,dist = 1)
-</code></pre>
-
-<pre><code># [1] TRUE
-</code></pre>
-
-<p>This is true because, basically speaking, &ldquo;a&rdquo; can be transformed to &ldquo;b&rdquo; in no more than 1 elementary steps in terms of <a href="http://en.wikipedia.org/wiki/Damerau%E2%80%93Levenshtein_distance">restricted Damerau-Levenshtein distance</a>.</p>
-
-<pre><code class="r">equal(&quot;a&quot;,&quot;hello&quot;,dist = 1)
-</code></pre>
-
-<pre><code># [1] FALSE
-</code></pre>
-
-<p>If you prefer other distance measure, you can specify <code>method=</code> argument. All possible values are listed in the documentation of <code>stringdist</code> package.</p>
-
-<pre><code class="r">equal(&quot;a&quot;,&quot;hello&quot;,dist = 4, method = &quot;dl&quot;)
-</code></pre>
-
-<pre><code># [1] FALSE
-</code></pre>
-
-<p>For example, if we want to find out names similar with <code>&quot;ken&quot;</code> with maximum distance 1, we can write like</p>
-
-<pre><code class="r">list.search(x, equal(&quot;ken&quot;, dist = 1), &quot;character&quot;, unlist = TRUE)
-</code></pre>
-
-<pre><code># p1.name 
-#   &quot;Ken&quot;
-</code></pre>
-
-<p>Argument <code>y</code> of <code>equal()</code> is not explicitly specified but it can automatically take the current value in examination in <code>list.search()</code>. Note that we specify <code>classes = &quot;character&quot;</code> because <code>like</code> will coarse all values to character values, which can be verified by</p>
-
-<pre><code class="r">equal(12345,&quot;1234&quot;,dist = 1)
-</code></pre>
-
-<pre><code># [1] TRUE
-</code></pre>
-
-<p>If the distance constraint is too tight, set a greater value.</p>
-
-<pre><code class="r">list.search(x, equal(&quot;ken&quot;, dist = 2), &quot;character&quot;, unlist = TRUE)
-</code></pre>
-
-<pre><code># p1.name p2.name p5.name 
-#   &quot;Ken&quot;  &quot;Kent&quot;  &quot;Kwen&quot;
-</code></pre>
-
-<p>Suppose we are working with the following data in which names becomes length-2 character vectors.</p>
-
-<pre><code class="r">x &lt;- list(
-    p1 = list(name=c(&quot;Ken&quot;, &quot;Ren&quot;),age=24),
-    p2 = list(name=c(&quot;Kent&quot;, &quot;Potter&quot;),age=26),
-    p3 = list(name=c(&quot;Sam&quot;, &quot;Lee&quot;),age=24),
-    p4 = list(name=c(&quot;Keynes&quot;, &quot;Bond&quot;),age=30),
-    p5 = list(name=c(&quot;Kwen&quot;, &quot;Hu&quot;),age=31))
-</code></pre>
-
-<p>Search all character vectors in which any element is like &ldquo;Ken&rdquo; within string distance 1.</p>
-
-<pre><code class="r">list.search(x, any(equal(&quot;Ken&quot;, dist = 1)), &quot;character&quot;)
-</code></pre>
-
-<pre><code># $p1
-# $p1$name
-# [1] &quot;Ken&quot; &quot;Ren&quot;
-# 
+<pre><code># List environment
+# Data:
+# $p1
+# [1] &quot;Ken&quot;
 # 
 # $p2
-# $p2$name
-# [1] &quot;Kent&quot;   &quot;Potter&quot;
+# [1] &quot;James&quot;
 # 
-# 
-# $p5
-# $p5$name
-# [1] &quot;Kwen&quot; &quot;Hu&quot;
+# $p3
+# [1] &quot;Penny&quot;
 </code></pre>
 
-<p>Search all character vectors in which all elements are unlike &ldquo;Ken&rdquo; due to string distance no less than 2.</p>
+<p>Note that the resulted object is also a <code>List environment</code> although its printed results include the inner data. To use the result with external functions, we need to extract the inner data by calling <code>m$data</code>.</p>
 
-<pre><code class="r">list.search(x, all(!equal(&quot;Ken&quot;, dist = 2)), &quot;character&quot;)
+<p>Get all the possible cases of interests for those whose R experience is longer than 1 year.</p>
+
+<pre><code class="r">m$filter(lang$r &gt; 1)$
+  cases(interest)$
+  data
 </code></pre>
 
-<pre><code># $p4
-# $p4$name
-# [1] &quot;Keynes&quot; &quot;Bond&quot;
+<pre><code># [1] &quot;movies&quot;  &quot;music&quot;   &quot;reading&quot; &quot;sports&quot;
 </code></pre>
 
-<p>Search all character vectors <code>c(x,y)</code> like <code>c(&quot;Ken&quot;,&quot;Hu&quot;)</code> with both string distances no greater than 2, that is, the distances between <code>x</code> and &ldquo;Ken&rdquo; as well as that between <code>y</code> and &ldquo;Hu&rdquo; should be no greater than 2.</p>
+<p>Calculate an integer vector of the average number of years using R for each interest class.</p>
 
-<pre><code class="r">list.search(x, all(equal(c(&quot;Ken&quot;,&quot;Hu&quot;), dist = 2)), &quot;character&quot;)
+<pre><code class="r">m$class(interest)$
+  map(case -&gt; length(case))$
+  call(unlist)$
+  data
 </code></pre>
 
-<pre><code># $p5
-# $p5$name
-# [1] &quot;Kwen&quot; &quot;Hu&quot;
+<pre><code>#  movies   music reading  sports 
+#       2       2       2       1
 </code></pre>
 
-<h2>Fuzzy filtering</h2>
+<p>A more handy way to extract <code>data</code> from the List environment is to use <code>[]</code>.</p>
 
-<p>The fuzzy search functions also work with filtering functions.</p>
-
-<p>Consider the following data.</p>
-
-<pre><code class="r">x &lt;- list(
-    p1 = list(name=c(&quot;Ken&quot;, &quot;Ren&quot;),age=24),
-    p2 = list(name=c(&quot;Kent&quot;, &quot;Potter&quot;),age=26),
-    p3 = list(name=c(&quot;Sam&quot;, &quot;Lee&quot;),age=24),
-    p4 = list(name=c(&quot;Keynes&quot;, &quot;Bond&quot;),age=30),
-    p5 = list(name=c(&quot;Kwen&quot;, &quot;Hu&quot;),age=31))
+<pre><code class="r">m$class(interest)$
+  map(case -&gt; length(case))$
+  call(unlist) []
 </code></pre>
 
-<p>We can also use fuzzy search compares with <code>list.filter</code>. For example, filter all list members whose <code>name</code> has any character value like <code>Ken</code> with maximum distance 1, and output their pasted names as a named character vector. Here we use pipeline.</p>
-
-<pre><code class="r">library(pipeR)
-x %&gt;&gt;%
-  list.filter(any(equal(&quot;Ken&quot;,name,dist = 1))) %&gt;&gt;%
-  list.mapv(paste(name,collapse = &quot; &quot;))
-</code></pre>
-
-<pre><code>#            p1            p2            p5 
-#     &quot;Ken Ren&quot; &quot;Kent Potter&quot;     &quot;Kwen Hu&quot;
+<pre><code>#  movies   music reading  sports 
+#       2       2       2       1
 </code></pre>
 
 </body>

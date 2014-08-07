@@ -1,0 +1,38 @@
+## ----, echo = FALSE, message = FALSE-------------------------------------
+knitr::opts_chunk$set(comment="#",error=FALSE,tidy=FALSE)
+
+## ------------------------------------------------------------------------
+devs <- 
+  list(
+    p1=list(name="Ken",age=24,
+      interest=c("reading","music","movies"),
+      lang=list(r=2,csharp=4,python=3)),
+    p2=list(name="James",age=25,
+      interest=c("sports","music"),
+      lang=list(r=3,java=2,cpp=5)),
+    p3=list(name="Penny",age=24,
+      interest=c("movies","reading"),
+      lang=list(r=1,cpp=4,python=2)))
+
+## ------------------------------------------------------------------------
+m <- List(devs)
+
+## ------------------------------------------------------------------------
+m$map(name)
+
+## ------------------------------------------------------------------------
+m$filter(lang$r > 1)$
+  cases(interest)$
+  data
+
+## ------------------------------------------------------------------------
+m$class(interest)$
+  map(case -> length(case))$
+  call(unlist)$
+  data
+
+## ------------------------------------------------------------------------
+m$class(interest)$
+  map(case -> length(case))$
+  call(unlist) []
+

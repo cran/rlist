@@ -3,7 +3,8 @@
 \alias{list.join}
 \title{Join two lists by single or multiple keys}
 \usage{
-list.join(x, y, xkey, ykey = NULL, ..., keep.order = TRUE)
+list.join(x, y, xkey, ykey = NULL, ..., keep.order = TRUE,
+  envir = parent.frame())
 }
 \arguments{
 \item{x}{The first list}
@@ -18,6 +19,8 @@ same to \code{xkey} if \code{NULL} is taken}
 \item{...}{The additional parameters passed to \code{merge.data.frame}}
 
 \item{keep.order}{Should the order of \code{x} be kept?}
+
+\item{envir}{The environment to evaluate mapping function}
 }
 \description{
 Join two lists by single or multiple keys
@@ -29,9 +32,9 @@ l1 <- list(p1=list(name="Ken",age=20),
        p3=list(name="Jenny",age=20))
 l2 <- list(p1=list(name="Jenny",age=20,type="A"),
        p2=list(name="Ken",age=20,type="B"),
-       p3=list(name="James",age=21,type="A"))
+       p3=list(name="James",age=22,type="A"))
 list.join(l1,l2,name)
-list.join(l1,l2,.["name","age"])
+list.join(l1,l2,.[c("name","age")])
 }
 }
 

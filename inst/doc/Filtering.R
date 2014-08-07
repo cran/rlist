@@ -36,8 +36,8 @@ list.takeWhile(devs, lang$r >= 2)
 list.skipWhile(devs, lang$r <= 2)
 
 ## ------------------------------------------------------------------------
-list.if(devs, "music" %in% interest)
-list.if(devs, "java" %in% names(lang))
+list.is(devs, "music" %in% interest)
+list.is(devs, "java" %in% names(lang))
 
 ## ------------------------------------------------------------------------
 list.which(devs, "music" %in% interest)

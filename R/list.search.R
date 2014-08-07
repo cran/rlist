@@ -1,24 +1,27 @@
-#' Search a list recusively by a value
+#' Search a list recusively by an expression
 #'
 #' @param .data \code{list}
-#' @param when \code{function}: \code{any} or \code{all}
-#' @param how A logical comparer \code{function}.
-#'
-#'     Exact search comparers
-#'
-#'     \code{identical}, \code{unidentical},
-#'     \code{equal}, \code{unequal}
-#'     \code{include}, \code{exclude}
-#'
-#'     Fuzzy search comparers
-#'
-#'     \code{like(dist)}, \code{unlike(dist)} where
-#'     \code{dist} is the maximum or minimum string distance.
-#' @param what The value to search
-#' @param ... Additional parameters passed to \code{fun}
-#' @param na.rm \code{logical} Should \code{NA} be ignored?
-#' @param classes A character vector of class names that restrict the search. By default, the search range is restrcited to the class of \code{value}, so that types are strictly distinguished, that is, searching numeric \code{1} does not include comparing integer \code{1L}. To broader the search range, add more values to \code{classes} such as \code{classes = c("numeric","integer")}.
+#' @param expr a lambda expression
+#' @param classes a character vector of class names that restrict the search. By default, the range is unrestricted (\code{ANY}).
+#' @param n the number of results to get
 #' @param unlist \code{logical} Should the result be unlisted?
+#' @param envir The environment to evaluate mapping function
+#' @details
+#' \code{list.search} evaluates an expression (\code{expr}) recursively
+#' along a list (\code{.data}).
+#'
+#' If the expression results in a single-valued logical vector and its
+#' value is \code{TRUE}, the whole vector will be collected If it results
+#' in multi-valued or non-logical vector, the non-\code{NA} values
+#' resulted from the expression will be collected.
+#'
+#' To search whole vectors that meet certain condition, specify the
+#' expression that returns a single logical value.
+#'
+#' To search the specific values within the vectors, use subsetting in the
+#' expression, that is, \code{.[cond]} or lambda expression like
+#' \code{x -> x[cond]} where \code{cond} is a logical vector used to
+#' select the elements in the vector.
 #' @name list.search
 #' @export
 #' @examples
@@ -30,26 +33,26 @@
 #'        p3 = list(type=c("B","C"),score=c(c1=9,c2=7)),
 #'        p4 = list(type=c("B","C"),score=c(c1=8,c2=NA)))
 #'
-#' ## Search identical values
-#' list.search(x, any, identical, "A")
-#' list.search(x, any, identical, c("A","B"))
-#' list.search(x, any ,identical, c(10,8))
-#' list.search(x, any, identical, c(c1=9,c2=7))
+#' ## Search exact values
+#' list.search(x, equal("A", exactly = TRUE))
+#' list.search(x, equal(c("A","B"), exactly = TRUE))
+#' list.search(x, equal(c(9,7), exactly = TRUE))
+#' list.search(x, equal(c(c1=9,c2=7), exactly = TRUE))
 #'
 #' ## Search all equal values
-#' list.search(x, all, equal, 9)
-#' list.search(x, all, equal, c(8,9))
-#' list.search(x, all, equal, c(8,9), na.rm = TRUE)
+#' list.search(x, all(equal(9)))
+#' list.search(x, all(equal(c(8,9))))
+#' list.search(x, all(equal(c(8,9)),na.rm = TRUE))
 #'
 #' ## Search any equal values
-#' list.search(x, any, equal, 9)
-#' list.search(x, any, equal, c(8,9))
+#' list.search(x, any(equal(9)))
+#' list.search(x, any(equal(c(8,9))))
 #'
 #' ## Search all/any included/excluded values
-#' list.search(x, all, include, 9)
-#' list.search(x, all, include, c(9,10))
-#' list.search(x, any, include, c(9,10))
-#' list.search(x, all, exclude, c(7,9,10))
+#' list.search(x, equal(9, include = TRUE))
+#' list.search(x, all(equal(c(9,10), include = TRUE)))
+#' list.search(x, any(equal(c(9,10), include = TRUE)))
+#' list.search(x, all(!equal(c(7,9,10), include = TRUE)))
 #'
 #' # Fuzzy search
 #'
@@ -61,7 +64,11 @@
 #'   p5 = list(name="Kwen",age=31)
 #' )
 #'
-#' list.search(data, any, like(1), "Ken")
+#' list.search(data, equal("^K\\w+n$", pattern = TRUE), "character")
+#'
+#' list.search(data, equal("Ken", dist = 1), "character")
+#' list.search(data, equal("Man", dist = 2), "character")
+#' list.search(data, !equal("Man", dist = 2), "character")
 #'
 #' data <- list(
 #'   p1 = list(name=c("Ken", "Ren"),age=24),
@@ -70,80 +77,27 @@
 #'   p4 = list(name=c("Keynes", "Bond"),age=30),
 #'   p5 = list(name=c("Kwen", "Hu"),age=31))
 #'
-#' list.search(data, all, like(1), "Ken")
-#' list.search(data, any, like(1), "Ken")
-#' list.search(data, all, unlike(1), "Ken")
-#' list.search(data, any, unlike(1), "Ken")
+#' list.search(data, all(equal("Ken", dist = 1)), "character")
+#' list.search(data, any(equal("Ken", dist = 1)), "character")
+#' list.search(data, all(!equal("Ken", dist = 1)), "character")
+#' list.search(data, any(!equal("Ken", dist = 1)), "character")
+#'
+#' list.search(data, .[equal("e",pattern = TRUE)], "character")
 #' }
-list.search <- function(.data, when, how, what, ...,
-  na.rm = FALSE, classes = class(what), unlist = FALSE) {
-  when <- match.fun(when)
-  how <- match.fun(how)
-  results <- rapply(.data, function(src) {
-    q <- when(how(src,what,...), na.rm = na.rm)
-    if(!is.na(q) && q) src
-  },classes = classes, how = if(unlist) "unlist" else "list")
+list.search <- function(.data, expr, classes = "ANY",
+  n = Inf, unlist = FALSE, envir = parent.frame()) {
+  l <- lambda(substitute(expr))
+  counter <- as.environment(list(i = 0L))
+  fun <- list.search.fun
+  environment(fun) <- envir
+  formals(fun) <- setnames(formals(fun),
+    c(".data",".expr",".counter",".n",l$symbols))
+  results <- rapply(.data, fun, classes = classes,
+    how = if(unlist) "unlist" else "list",
+    .expr = l$expr, .counter = counter, .n = n)
   if(!unlist) {
     results <- list.clean(results,
       fun = is.null.or.empty, recursive = TRUE)
   }
   results
-}
-
-#' Exact search functions
-#' @name exact-search
-#' @param x value
-#' @param y data
-#' @param ... additional parameters
-#' @return \code{TRUE} or \code{FALSE}
-#' @export
-equal <- function(x,y) {
-  if(length(x) != length(y)) return(FALSE)
-  y == x
-}
-
-#' @export
-#' @rdname exact-search
-unequal <- function(x,y) {
-  !equal(x,y)
-}
-
-#' @export
-#' @rdname exact-search
-unidentical <- function(x,y,...) {
-  !identical(x,y,...)
-}
-
-#' @export
-#' @rdname exact-search
-include <- function(x,y) {
-  y %in% x
-}
-
-#' @export
-#' @rdname exact-search
-exclude <- function(x,y) {
-  !(y %in% x)
-}
-
-
-#' Fuzzy search functions
-#' @name fuzzy-search
-#' @param dist string distance
-#' @param ... additional parameter passed to
-#'      \code{stringdist} functions
-#' @return a closure \code{function(src,value)}
-#' @export
-like <- function(dist,...) {
-  function(src,value) {
-    stringdist::stringdist(value,src,...) <= dist
-  }
-}
-
-#' @export
-#' @rdname fuzzy-search
-unlike <- function(dist,...) {
-  function(src,value) {
-    stringdist::stringdist(value,src,...) >= dist
-  }
 }
