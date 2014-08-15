@@ -1,16 +1,18 @@
-#' List wrapper environment in which \code{data} is the \code{list} and
+#' Create a \code{List environment} that wraps given \code{data} and
 #' most list functions are defined for chainable operations.
 #'
 #' @param data \code{list}
 #' @name List
 #' @export
 #' @details
-#' Most list functions are defined in the wrapper environment.
+#' Most list functions are defined in \code{List environment}.
 #' In addition to these functions, \code{call(fun,...)} calls
 #' external function \code{fun} with additional parameters specifies in
 #' \code{...}.
 #'
-#' To extract the data from List \code{x}, call \code{x$data}.
+#' To extract the data from List \code{x}, call \code{x$data} or simply
+#' \code{x[]}.
+#'
 #' @examples
 #' \dontrun{
 #' x <- list(p1 = list(type="A",score=list(c1=10,c2=8)),
@@ -27,9 +29,6 @@
 #'       call(mean) []) []
 #' }
 List <- function(data = list()) {
-  envir <- environment()
-  class(envir) <- c("List","environment")
-
   call <- function(fun,...) {
     data <- fun(data,...)
     List(data)
@@ -236,14 +235,15 @@ List <- function(data = list()) {
     List(data)
   }
   subset <- function(...) {
-    data <- subset(data,...,envir = parent.frame())
+    data <- list.subset(data,...)
     List(data)
   }
   summary <- function(...) {
     data <- summary(data,...)
     List(data)
   }
-  envir
+  envir <- environment()
+  setclass(envir, c("List","environment"))
 }
 
 #' @export
@@ -251,24 +251,21 @@ List <- function(data = list()) {
   get("data",envir = x,inherits = FALSE)
 
 #' @export
-print.List <- function(x,...) {
-  cat("List environment\n")
-  cat("Data:\n")
-  print(x$data,...)
-  invisible(x)
+print.List <- function(x,...,header = getOption("List.header", TRUE)) {
+  if(!is.null(x$data)) {
+    if(header) cat("$data :",class(x$data),"\n------\n")
+    print(x$data,...)
+  }
 }
 
 #' @export
-str.List <- function(object,...) {
-  cat("List environment\n")
-  cat("Data:\n")
+str.List <- function(object,...,header = getOption("List.header", TRUE)) {
+  if(header) cat("$data : ")
   str(object$data,...)
 }
 
 #' @export
 summary.List <- function(object,...) {
-  cat("List environment\n")
-  cat("Data:\n")
   summary(object$data,...)
 }
 
