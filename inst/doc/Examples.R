@@ -32,7 +32,7 @@ B:
 '
 students %>>%
   list.parse(type="yaml") %>>%
-  list.map(f(members,,clsname) -> members %>>% list.update(class=clsname)) %>>%
+  list.map(f(members,,clsname) ~ members %>>% list.update(class=clsname)) %>>%
   list.ungroup %>>%
   list.stack
 

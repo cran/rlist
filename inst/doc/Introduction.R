@@ -57,5 +57,5 @@ nums %>>%
 nums %>>%
   list.map(x ~ sum(x))
 nums %>>%
-  list.filter(x -> mean(x)>=3)
+  list.filter(x ~ mean(x)>=3)
 

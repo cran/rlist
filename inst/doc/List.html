@@ -223,8 +223,8 @@ hr {
 <pre><code class="r">m$map(name)
 </code></pre>
 
-<pre><code># List environment
-# Data:
+<pre><code># $data : list 
+# ------
 # $p1
 # [1] &quot;Ken&quot;
 # 
@@ -255,6 +255,10 @@ hr {
   data
 </code></pre>
 
+<pre><code># Warning: lambda expression of the form &quot;x -&gt; expr&quot; has been deprecated,
+# please use &quot;x ~ expr&quot; instead.
+</code></pre>
+
 <pre><code>#  movies   music reading  sports 
 #       2       2       2       1
 </code></pre>
@@ -264,6 +268,10 @@ hr {
 <pre><code class="r">m$class(interest)$
   map(case -&gt; length(case))$
   call(unlist) []
+</code></pre>
+
+<pre><code># Warning: lambda expression of the form &quot;x -&gt; expr&quot; has been deprecated,
+# please use &quot;x ~ expr&quot; instead.
 </code></pre>
 
 <pre><code>#  movies   music reading  sports 

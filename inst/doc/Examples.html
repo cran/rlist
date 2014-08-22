@@ -238,7 +238,7 @@ B:
 &#39;
 students %&gt;&gt;%
   list.parse(type=&quot;yaml&quot;) %&gt;&gt;%
-  list.map(f(members,,clsname) -&gt; members %&gt;&gt;% list.update(class=clsname)) %&gt;&gt;%
+  list.map(f(members,,clsname) ~ members %&gt;&gt;% list.update(class=clsname)) %&gt;&gt;%
   list.ungroup %&gt;&gt;%
   list.stack
 </code></pre>

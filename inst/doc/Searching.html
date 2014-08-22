@@ -203,11 +203,19 @@ hr {
 
 <ul>
 <li><code>.data</code>: the list to be searched</li>
-<li><code>expr</code>: a lambda expression with respect to value that returns a single-valued logical vector. In the expression, <code>equal()</code> is designed for robust logical and fuzzy comparison between two objects.</li>
+<li><code>expr</code>: a lambda expression. In the expression, <code>equal()</code> is designed for robust logical and fuzzy comparison between two objects.</li>
 <li><code>classes</code>: a character vector of class names that restrict the search. By default, the range is unrestricted by taking value <code>&quot;ANY&quot;</code>.</li>
 <li><code>n</code>: an integer indicating the maximum number of results to return.</li>
 <li><code>unlist</code>: should the final result be unlisted?</li>
 </ul>
+
+<p><code>list.search()</code> evaluates an expression (<code>expr</code>) recursively along a list (<code>.data</code>). </p>
+
+<p>If the expression results in a single-valued logical vector and its value is <code>TRUE</code>, the whole vector will be collected If it results in multi-valued or non-logical vector, the non-<code>NA</code> values resulted from the expression will be collected. </p>
+
+<p>To search whole vectors that meet certain condition, specify the expression that returns a single logical value. </p>
+
+<p>To search the specific values within the vectors, use subsetting in the expression, that is, <code>.[cond]</code> or lambda expression like <code>x ~ x[cond]</code> where <code>cond</code> is a logical vector used to select the elements in the vector.</p>
 
 <h2>Exact search</h2>
 
@@ -483,6 +491,28 @@ hr {
 # $p5$name
 # [1] &quot;Kwen&quot; &quot;Hu&quot;
 </code></pre>
+
+<p>Search the terms in the character vectors like <code>Ken</code> with distance 1 and single out the values alike.</p>
+
+<pre><code class="r">list.search(x, .[equal(&quot;Ken&quot;, dist = 1)], &quot;character&quot;)
+</code></pre>
+
+<pre><code># $p1
+# $p1$name
+# [1] &quot;Ken&quot; &quot;Ren&quot;
+# 
+# 
+# $p2
+# $p2$name
+# [1] &quot;Kent&quot;
+# 
+# 
+# $p5
+# $p5$name
+# [1] &quot;Kwen&quot;
+</code></pre>
+
+<p>Only values like &ldquo;Ken&rdquo; are returned.</p>
 
 <h2>Fuzzy filtering</h2>
 

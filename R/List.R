@@ -1,3 +1,24 @@
+# compatibility for data.table functions
+.datatable.aware <- TRUE
+
+createListClosure <- function(f, data) {
+  function(...) {
+    dots <- match.call(expand.dots = FALSE)$`...`
+    rcall <- as.call(c(f,quote(data),dots))
+    data <- eval(rcall,list(data = data),parent.frame())
+    List(data)
+  }
+}
+
+createCallClosure <- function(data) {
+  function(f, ...) {
+    dots <- match.call(expand.dots = FALSE)$`...`
+    rcall <- as.call(c(f,quote(data),dots))
+    data <- eval(rcall,list(data = data),parent.frame())
+    List(data)
+  }
+}
+
 #' Create a \code{List environment} that wraps given \code{data} and
 #' most list functions are defined for chainable operations.
 #'
@@ -27,228 +48,75 @@
 #'       map(score)$
 #'       call(unlist)$
 #'       call(mean) []) []
+#'
+#' # Subsetting, extracting, and assigning
+#'
+#' p <- List(list(a=1,b=2))
+#' p["a"]
+#' p[["a"]]
+#' p$a <- 2
+#' p["b"] <- NULL
+#' p[["a"]] <- 3
 #' }
 List <- function(data = list()) {
-  call <- function(fun,...) {
-    data <- fun(data,...)
-    List(data)
-  }
+  call <- createCallClosure(data)
 
-  all <- function(...) {
-    data <- list.all(data,...,envir = parent.frame())
-    List(data)
-  }
-  any <- function(...) {
-    data <- list.any(data,...,envir = parent.frame())
-    List(data)
-  }
-  append <- function(...) {
-    data <- list.append(data,...)
-    List(data)
-  }
-  apply <- function(...) {
-    data <- list.apply(data,...)
-    List(data)
-  }
-  cases <- function(...) {
-    data <- list.cases(data,...,envir = parent.frame())
-    List(data)
-  }
-  cbind <- function() {
-    data <- list.cbind(data)
-    List(data)
-  }
-  class <- function(...) {
-    data <- list.class(data,...,envir = parent.frame())
-    List(data)
-  }
-  clean <- function(...) {
-    data <- list.clean(data,...)
-    List(data)
-  }
-  common <- function(...) {
-    data <- list.common(data,...,envir = parent.frame())
-    List(data)
-  }
-  count <- function(...) {
-    data <- list.count(data,...,envir = parent.frame())
-    List(data)
-  }
-  do <- function(...) {
-    data <- list.do(data,...)
-    List(data)
-  }
-  exclude <- function(...) {
-    data <- list.exclude(data,...,envir = parent.frame())
-    List(data)
-  }
-  extract <- function(...) {
-    data <- list.extract(data,...)
-    List(data)
-  }
-  filter <- function(...) {
-    data <- list.filter(data,...,envir = parent.frame())
-    List(data)
-  }
-  find <- function(...) {
-    data <- list.find(data,...,envir = parent.frame())
-    List(data)
-  }
-  findi <- function(...) {
-    data <- list.findi(data,...,envir = parent.frame())
-    List(data)
-  }
-  flatten <- function(...) {
-    data <- list.flatten(data,...)
-    List(data)
-  }
-  group <- function(...) {
-    data <- list.group(data,...,envir = parent.frame())
-    List(data)
-  }
-  is <- function(...) {
-    data <- list.is(data,...,envir = parent.frame())
-    List(data)
-  }
-  insert <- function(...) {
-    data <- list.insert(data,...)
-    List(data)
-  }
-  iter <- function(...) {
-    data <- list.iter(data,...,envir = parent.frame())
-    invisible(List(data))
-  }
-  join <- function(...) {
-    data <- list.join(data,...,envir = parent.frame())
-    List(data)
-  }
-  load <- function(...) {
-    data <- list.load(...)
-    List(data)
-  }
-  map <- function(...) {
-    data <- list.map(data,...,envir = parent.frame())
-    List(data)
-  }
-  mapv <- function(...) {
-    data <- list.mapv(data,...,envir = parent.frame())
-    List(data)
-  }
-  match <- function(...) {
-    data <- list.match(data,...)
-    List(data)
-  }
-  merge <- function(...) {
-    data <- list.merge(data,...)
-    List(data)
-  }
-  order <- function(...) {
-    data <- list.order(data,...,.envir = parent.frame())
-    List(data)
-  }
-  parse <- function(...) {
-    data <- list.parse(...)
-    List(data)
-  }
-  prepend <- function(...) {
-    data <- list.prepend(data,...)
-    List(data)
-  }
-  rbind <- function() {
-    data <- list.rbind(data)
-    List(data)
-  }
-  remove <- function(...) {
-    data <- list.remove(data,...)
-    List(data)
-  }
-  reverse <- function() {
-    data <- list.reverse(data)
-    List(data)
-  }
-  sample <- function(...) {
-    data <- list.sample(data,...,envir = parent.frame())
-    List(data)
-  }
-  save <- function(...) {
-    data <- list.save(data,...)
-    List(data)
-  }
-  search <- function(...) {
-    data <- list.search(data,...,envir = parent.frame())
-    List(data)
-  }
-  select <- function(...) {
-    data <- list.select(data,...,.envir = parent.frame())
-    List(data)
-  }
-  serialize <- function(...) {
-    data <- list.serialize(data,...)
-    List(data)
-  }
-  skip <- function(...) {
-    data <- list.skip(data,...)
-    List(data)
-  }
-  skipWhile <- function(...) {
-    data <- list.skipWhile(data,...,envir = parent.frame())
-    List(data)
-  }
-  sort <- function(...) {
-    data <- list.sort(data,...,.envir = parent.frame())
-    List(data)
-  }
-  stack <- function() {
-    data <- list.stack(data)
-    List(data)
-  }
-  table <- function(...) {
-    data <- list.table(data,...,.envir = parent.frame())
-    List(data)
-  }
-  take <- function(...) {
-    data <- list.take(data,...)
-    List(data)
-  }
-  takeWhile <- function(...) {
-    data <- list.takeWhile(data,...,envir = parent.frame())
-    List(data)
-  }
-  ungroup <- function(...) {
-    data <- list.ungroup(data,...)
-    List(data)
-  }
-  unserialize <- function(...) {
-    data <- list.unserialize(...)
-    List(data)
-  }
-  update <- function(...) {
-    data <- list.update(data,...,.envir = parent.frame())
-    List(data)
-  }
-  which <- function(...) {
-    data <- list.which(data,...,envir = parent.frame())
-    List(data)
-  }
-  zip <- function(...) {
-    data <- list.zip(data,...)
-    List(data)
-  }
-  subset <- function(...) {
-    data <- list.subset(data,...)
-    List(data)
-  }
-  summary <- function(...) {
-    data <- summary(data,...)
-    List(data)
-  }
+  all <- createListClosure(list.all, data)
+  any <- createListClosure(list.any, data)
+  append <- createListClosure(list.append, data)
+  apply <- createListClosure(list.apply, data)
+  cases <- createListClosure(list.cases, data)
+  cbind <- createListClosure(list.cbind, data)
+  class <- createListClosure(list.class, data)
+  clean <- createListClosure(list.clean, data)
+  common <- createListClosure(list.common, data)
+  count <- createListClosure(list.count, data)
+  do <- createListClosure(list.do, data)
+  exclude <- createListClosure(list.exclude, data)
+  extract <- createListClosure(list.extract, data)
+  filter <- createListClosure(list.filter, data)
+  find <- createListClosure(list.find, data)
+  findi <- createListClosure(list.findi, data)
+  flatten <- createListClosure(list.flatten, data)
+  group <- createListClosure(list.group, data)
+  is <- createListClosure(list.is, data)
+  insert <- createListClosure(list.insert, data)
+  iter <- createListClosure(list.iter, data)
+  join <- createListClosure(list.join, data)
+  load <- createListClosure(list.load, data)
+  map <- createListClosure(list.map, data)
+  mapv <- createListClosure(list.mapv, data)
+  match <- createListClosure(list.match, data)
+  merge <- createListClosure(list.merge, data)
+  order <- createListClosure(list.order, data)
+  parse <- createListClosure(list.parse, data)
+  prepend <- createListClosure(list.prepend, data)
+  rbind <- createListClosure(list.rbind, data)
+  remove <- createListClosure(list.remove, data)
+  reverse <- createListClosure(list.reverse, data)
+  sample <- createListClosure(list.sample, data)
+  save <- createListClosure(list.save, data)
+  search <- createListClosure(list.search, data)
+  select <- createListClosure(list.select, data)
+  serialize <- createListClosure(list.serialize, data)
+  skip <- createListClosure(list.skip, data)
+  skipWhile <- createListClosure(list.skipWhile, data)
+  sort <- createListClosure(list.sort, data)
+  stack <- createListClosure(list.stack, data)
+  table <- createListClosure(list.table, data)
+  take <- createListClosure(list.take, data)
+  takeWhile <- createListClosure(list.takeWhile, data)
+  ungroup <- createListClosure(list.ungroup, data)
+  unserialize <- createListClosure(list.unserialize, data)
+  update <- createListClosure(list.update, data)
+  which <- createListClosure(list.which, data)
+  zip <- createListClosure(list.zip, data)
+  subset <- createListClosure(list.subset, data)
+  summary <- createListClosure(summary, data)
+
   envir <- environment()
   setclass(envir, c("List","environment"))
 }
-
-#' @export
-`[.List` <- function(x,...)
-  get("data",envir = x,inherits = FALSE)
 
 #' @export
 print.List <- function(x,...,header = getOption("List.header", TRUE)) {
@@ -277,4 +145,63 @@ summary.List <- function(object,...) {
 #' @export
 subset.List <- function(x,...) {
   subset(x$data,...)
+}
+
+ndots <- function(dots) {
+  length(dots) >= 1L && any(nzchar(dots))
+}
+
+List.get <- function(f, data, dots, envir) {
+  rcall <- as.call(c(f,quote(data),dots))
+  eval(rcall,list(data = data),envir)
+}
+
+#' @export
+`[.List` <- function(x, ...) {
+  dots <- match.call(expand.dots = FALSE)$`...`
+  if(ndots(dots)) {
+    data <- List.get(`[`,x$data,dots,parent.frame())
+    List(data)
+  }
+  else x$data
+}
+
+#' @export
+`[[.List` <- function(x, ...) {
+  dots <- match.call(expand.dots = FALSE)$`...`
+  if(ndots(dots)) {
+    data <- List.get(`[[`,x$data,dots,parent.frame())
+    List(data)
+  }
+  else x$data
+}
+
+
+List.set <- function(f, x, dots, value, envir) {
+  rcall <- as.call(c(f,quote(x),dots,quote(value)))
+  eval(rcall,list(x = x, value = value),envir)
+}
+
+#' @export
+`$<-.List` <- function(x,...,value) {
+  dots <- match.call(expand.dots = FALSE)$`...`
+  if(ndots(dots))
+    value <- List.set(`$<-`, x$data, dots, value, parent.frame())
+  List(value)
+}
+
+#' @export
+`[<-.List` <- function(x,...,value) {
+  dots <- match.call(expand.dots = FALSE)$`...`
+  if(ndots(dots))
+    value <- List.set(`[<-`, x$data, dots, value, parent.frame())
+  List(value)
+}
+
+#' @export
+`[[<-.List` <- function(x,...,value) {
+  dots <- match.call(expand.dots = FALSE)$`...`
+  if(ndots(dots))
+    value <- List.set(`[[<-`, x$data, dots, value, parent.frame())
+  List(value)
 }

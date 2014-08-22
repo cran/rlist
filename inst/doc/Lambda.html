@@ -206,14 +206,14 @@ hr {
 <li>Univariate lambda expression: In contrast to implicit lambda expression, the symbol that refers to the list member is customized in the following formats:
 
 <ul>
-<li><code>x -&gt; expression</code></li>
-<li><code>f(x) -&gt; expression</code></li>
+<li><code>x ~ expression</code></li>
+<li><code>f(x) ~ expression</code></li>
 </ul></li>
 <li>Multivariate lambda expression: In contrast to univariate lambda expression, the symbols of list member, index, and member name are customized in the following formats:
 
 <ul>
-<li><code>f(x,i) -&gt; expression</code></li>
-<li><code>f(x,i,name) -&gt; expression</code></li>
+<li><code>f(x,i) ~ expression</code></li>
+<li><code>f(x,i,name) ~ expression</code></li>
 </ul></li>
 </ul></li>
 </ul>
@@ -260,7 +260,7 @@ list.map(x,y)
 <p>To use other symbols to represent the metadata of a list member, we can use explicit lambda expressions.</p>
 
 <pre><code class="r">x &lt;- list(a=list(x=1,y=2),b=list(x=2,y=3))
-list.map(x, f(item,index) -&gt; unlist(item) * index)
+list.map(x, f(item,index) ~ unlist(item) * index)
 </code></pre>
 
 <pre><code># $a
@@ -272,7 +272,7 @@ list.map(x, f(item,index) -&gt; unlist(item) * index)
 # 4 6
 </code></pre>
 
-<pre><code class="r">list.map(x, f(item,index,name) -&gt; list(name=name,sum=sum(unlist(item))))
+<pre><code class="r">list.map(x, f(item,index,name) ~ list(name=name,sum=sum(unlist(item))))
 </code></pre>
 
 <pre><code># $a
@@ -304,7 +304,7 @@ list.map(x,sum(.))
 # [1] 7
 </code></pre>
 
-<pre><code class="r">list.map(x,item -&gt; sum(item))
+<pre><code class="r">list.map(x,item ~ sum(item))
 </code></pre>
 
 <pre><code># $a
@@ -314,7 +314,7 @@ list.map(x,sum(.))
 # [1] 7
 </code></pre>
 
-<pre><code class="r">list.map(x,f(m,i) -&gt; m+i)
+<pre><code class="r">list.map(x,f(m,i) ~ m+i)
 </code></pre>
 
 <pre><code># $a
@@ -367,7 +367,7 @@ list.map(x,sum(y))
 # [1] 5
 </code></pre>
 
-<pre><code class="r">list.map(x,f(.,i) -&gt; . + i)
+<pre><code class="r">list.map(x,f(.,i) ~ . + i)
 </code></pre>
 
 <pre><code># $a

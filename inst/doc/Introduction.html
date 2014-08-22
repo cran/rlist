@@ -419,7 +419,7 @@ devs %&gt;&gt;%
 
 <h3>Lambda expression</h3>
 
-<p>Most functions in this package supports lambda expressions like <code>x ~ f(x)</code> or <code>x -&gt; f(x)</code> where <code>x</code> refers to the list member itself. Otherwise, <code>.</code> will by default be used to represent it.</p>
+<p>Most functions in this package supports lambda expressions like <code>x ~ f(x)</code> where <code>x</code> refers to the list member itself. Otherwise, <code>.</code> will by default be used to represent it.</p>
 
 <pre><code class="r">nums &lt;- list(a=c(1,2,3),b=c(2,3,4),c=c(3,4,5))
 nums %&gt;&gt;%
@@ -448,7 +448,7 @@ nums %&gt;&gt;%
 </code></pre>
 
 <pre><code class="r">nums %&gt;&gt;%
-  list.filter(x -&gt; mean(x)&gt;=3)
+  list.filter(x ~ mean(x)&gt;=3)
 </code></pre>
 
 <pre><code># $b

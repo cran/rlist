@@ -87,6 +87,9 @@ list.search(x, all(!equal("Ken", dist = 2)), "character")
 list.search(x, all(equal(c("Ken","Hu"), dist = 2)), "character")
 
 ## ------------------------------------------------------------------------
+list.search(x, .[equal("Ken", dist = 1)], "character")
+
+## ------------------------------------------------------------------------
 x <- list(
     p1 = list(name=c("Ken", "Ren"),age=24),
     p2 = list(name=c("Kent", "Potter"),age=26),
