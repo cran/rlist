@@ -1,82 +1,148 @@
-list.map.fun <- function(.data,.expr) {
-  eval(.expr,.list.env(.data),environment())
+.expr <- NULL
+
+map <- function(f, ...) {
+  mapply(FUN = f, ..., SIMPLIFY = FALSE)
 }
 
-list.map.internal <- function(.data,expr,fun = list.map.fun, envir) {
+reduce <- function(f, x, init, ...) {
+  y <- init
+  for(xi in x) y <- f(y, xi, ...)
+  y
+}
+
+list.map.fun <- function(.data, ., .i, .name) {
+  eval(.expr, .evalwith(.data), environment())
+}
+
+list.map.internal <- function(.data, expr, envir,
+  fun = list.map.fun, args = NULL) {
   if(is.empty(.data)) return(list())
   l <- lambda(expr)
-  xnames <- getnames(.data,character(1L))
-  environment(fun) <- envir
-  formals(fun) <- setnames(vector("pairlist",.nfsymbol),
-    c(".data",".expr",l$symbols))
-  args <- list(fun,.data,list(l$expr),.data,seq_along(.data),xnames)
-  do.call(Map, args)
+  xnames <- getnames(.data, character(1L))
+  environment(fun) <- args_env(.expr = l$expr,
+    .args = args, .evalwith = .evalwith, parent = envir)
+  formals(fun) <- setnames(formals(fun), c(".data", l$symbols))
+  args <- list(fun, .data, .data, seq_along(.data), xnames)
+  do.call("map", args)
 }
 
-list.is.fun <- function(.data,.expr) {
-  x <- eval(.expr,.list.env(.data),environment())
+list.is.fun <- function(.data, ., .i, .name) {
+  x <- eval(.expr, .evalwith(.data), environment())
   if(is.logical(x) && length(x) == 1L) x else NA
 }
 
-list.is.internal <- function(.data,cond,envir) {
-  as.logical(list.map.internal(.data,cond,list.is.fun,envir))
+list.is.internal <- function(.data, cond, envir) {
+  as.logical(list.map.internal(.data, cond, envir, list.is.fun))
 }
 
-list.findi.fun <- function(.data,.expr) {
-  env <- parent.frame(4L)
-  env$.i <- env$.i + 1L
-  x <- eval(.expr,.list.env(.data),environment())
-  if(is.logical(x) && length(x) == 1L && x) {
-    env$.n <- env$.n + 1L
-    env$.indices <- c(env$.indices, env$.i)
-    if(env$.n == env$n) stop(call. = FALSE)
+list.findi.fun <- function(.data, ., .i, .name) {
+  .args$i <- .args$i + 1L
+  x <- eval(.expr, .evalwith(.data), environment())
+  if(is.logical(x) && length(x) == 1L && !is.na(x)) {
+    if(x) {
+      .args$n <- .args$n + 1L
+      .args$indices[[.args$n]] <- .args$i
+      if(.args$n == .args$N) stop("finished", call. = FALSE)
+    }
+  } else if(.args$na.stop) stop("stopped", call. = FALSE)
+}
+
+list.findi.internal <- function(.data, cond, envir, n, na.stop = FALSE) {
+  n <- min(n, length(.data))
+  args <- args_env(i = 0L, n = 0L, N = n, na.stop = na.stop, indices = integer(n))
+  result <- try(list.map.internal(.data, cond, envir,
+    list.findi.fun, args), silent = TRUE)
+  if(is.error(result)) {
+    switch(attr(result, "condition")$message,
+      finished = NULL,
+      stopped = warning("Encountered value that is not TRUE or FALSE"),
+      stop(message, call. = FALSE))
+  }
+  args$indices[0L:args$n]
+}
+
+list.first.fun <- function(.data, ., .i, .name) {
+  x <- eval(.expr, .evalwith(.data), environment())
+  if(is.logical(x) && length(x) == 1L && !is.na(x)) {
+    if(x) {
+      .args$res <- list(state = TRUE, value = .data)
+      stop(call. = FALSE)
+    }
+  } else if(!.args$na.rm) {
+    .args$res <- list(state = NA, value = .data)
   }
 }
 
-list.findi.internal <- function(.data,cond,n,envir) {
-  .i <- 0L
-  .n <- 0L
-  .indices <- integer()
-  try(list.map.internal(.data,cond,list.findi.fun,envir),silent = TRUE)
-  .indices
+list.first.internal <- function(.data, cond, envir, na.rm) {
+  args <- args_env(res = list(state = FALSE), na.rm = na.rm)
+  try(list.map.internal(.data, cond, envir, list.first.fun, args),
+    silent = TRUE)
+  args$res
 }
 
-list.while.fun <- function(.data,.expr) {
-  env <- parent.frame(4L)
-  x <- eval(.expr,.list.env(.data),environment())
-  if(is.logical(x) && length(x) == 1L && x) env$.i <- env$.i + 1L
+list.while.fun <- function(.data, ., .i, .name) {
+  x <- eval(.expr, .evalwith(.data), environment())
+  if(is.logical(x) && length(x) && !is.na(x) && x) .args$i <- .args$i + 1L
   else stop(call. = FALSE)
 }
 
-list.order.internal <- function(.data,args,envir) {
+list.order.internal <- function(.data, args, envir, na.last = TRUE) {
   if(is.empty(.data)) return(integer())
-  envir <- new.env(parent = envir)
-  list2env(list.sort.functions,envir)
-  cols <- lapply(args,function(arg) {
-    if(is.null(arg)) stop("NULL condition")
-    unlist(list.map.internal(.data,arg,envir = envir),use.names = FALSE)
+  if(is.empty(args)) return(order(.data))
+  cols <- lapply(args, function(arg) {
+    if(is.null(arg)) stop("NULL condition", call. = FALSE)
+    desc <- class(arg) == "("
+    if(desc) arg <- arg[[2L]]
+    col <- list.map.internal(.data, arg, envir)
+    if(length(unique.default(vapply(col, "class", character(1L)))) > 1L) {
+      warning("Inconsistent classes of values in column [", deparse(arg),
+        "]. The column will be coerced to the same class.", call. = FALSE)
+    }
+    lens <- vapply(col, "length", integer(1L))
+    if(any(lens != 1L)) {
+      warning("Non-single value in column [", deparse(arg),
+        "]. Use NA instead to order.", call. = FALSE)
+      col[lens != 1L] <- NA
+    }
+    col <- unlist(col, recursive = FALSE, use.names = FALSE)
+    if(desc) col <- -xtfrm(col)
+    col
   })
-  do.call(order,cols)
+  do.call("order", c(cols, na.last = na.last))
 }
 
-list.search.fun <- function(.data, .expr, .counter, .n,
-  . = .data, .i = .counter$i, .name = NA_character_) {
-  q <- eval(.expr, environment(), NULL)
+list.search.fun <- function(.data, .expr, .args, .n = .args$n,
+  . = .data, .i = .args$i, .name = NULL) {
+  .args$i <- .args$i + 1L
+  q <- eval(.expr, NULL, environment())
   vq <- !is.na(q)
-  if(.counter$i < .n){
-    # for logical vector, only single-valued TRUE will return value;
-    # for other vectors, if it contains any non-NA values,
-    # the vector will be returned
-    if(is.logical(q)) {
-      if(length(q) == 1L && !is.na(q) && q) {
-        .counter$i <- .counter$i + length(.data)
-        return(.data)
-      } else {
-        return(NULL)
-      }
-    } else if(length(q) >= 1L && any(vq)) {
-      .counter$i <- .counter$i + length(which(vq))
-      return(q[vq])
+  if(is.logical(q) && length(q) == 1L && !is.na(q)) {
+    if(q) {
+      .args$n <- .args$n + 1L
+      .args$indices[[.args$n]] <- .args$i
+      .args$result[[.args$n]] <- .data
+      if(.args$n == .args$N) stop("finished", call. = FALSE)
     }
+  } else if(length(q) >= 1L && any(vq)) {
+    .args$n <- .args$n + 1L
+    .args$indices[[.args$n]] <- .args$i
+    .args$result[[.args$n]] <- q[vq]
+    if(.args$n == .args$N) stop("finished", call. = FALSE)
   }
+}
+
+list.group.internal <- function(.data, keys, envir, proc = NULL,
+  compare = "identical", sorted = TRUE) {
+  if(is.empty(keys)) return(.data)
+  values <- list.map.internal(.data, keys[[1L]], envir)
+  uvalues <- if(!missing(proc) && !is.null(proc))
+    match.fun(proc)(values) else values
+  uniques <- unique.default(uvalues)
+  names(uniques) <- uniques
+  if(sorted && all(vapply(uniques, length, integer(1L)) == 1L))
+    uniques <- sort(unlist(uniques))
+  lapply(uniques, function(key, ...) {
+    selector <- vapply(values, compare, logical(1L), key, USE.NAMES = FALSE)
+    list.group.internal(.data[selector], keys[-1L], ...)
+  }, envir, proc, compare, sorted)
 }

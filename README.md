@@ -2,52 +2,35 @@
 
 # rlist
 
-[![Build Status](https://travis-ci.org/renkun-ken/rlist.png?branch=master)](https://travis-ci.org/renkun-ken/rlist)
+[![Build Status](https://travis-ci.org/renkun-ken/rlist.png?branch=master)](https://travis-ci.org/renkun-ken/rlist) [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/renkun-ken/rlist?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-rlist is a set of tools for working with list objects. Its goal is to make it easier to work with lists by providing a wide range of functions on non-tabular data stored in them.
+rlist is a set of tools for working with list objects. Its goal is to make it easier to work with lists by providing a wide range of functions that operate on non-tabular data stored in them.
 
-This package supports list filtering, mapping, grouping, sorting, updating, searching, file input/output, and many other functions. It implements collection pipeline and strongly recommends functional programming style in list operations.
+This package supports list mapping, filtering, grouping, sorting, updating, searching, file input/output, and many other functions. Most functions in the package are designed to be pipeline friendly so that data processing with lists can be chained.
 
-## What's new in 0.3?
-
-[Release notes](https://github.com/renkun-ken/rlist/releases)
-
-#### 0.3-2
-
-- **API change**:
-    * Deprecate lambda expression of the form `x -> expr`. Use `x ~ expr` instead.
-    * All `envir` arguments of list functions are removed.
-- Fix environemnt issues.
-- Add subsetting, extracing, and assigning functionality to List environment.
-
-#### 0.3-1
-
-- Add `list.subset` that supports list subsetting by name, index, pattern matching, string distance to names.
-- `List$subset` switched from generic function `subset()` to `list.subset()`.
-
-#### 0.3
-
-- **API Break**: `list.search` now evaluates expression recursively in a list and supports lambda expression.
-- Add `equal()` function for logical and fuzzy filtering and searching which supports exact equality, atomic equality, inclusion, pattern matching, string-distance tolerance.
-- Add `List()` to provide an environment in which most list functions are defined for light-weight chaining that does not rely on external operators.
+**[rlist Tutorial](http://renkun.me/rlist-tutorial) is a highly recommended complete guide to rlist.**
 
 ## Installation
 
-You can install the latest released version from [CRAN](http://cran.r-project.org/web/packages/rlist/) with
+Install the latest version from GitHub:
+
+```r
+devtools::install_github("renkun-ken/rlist")
+```
+
+Install from [CRAN](http://cran.r-project.org/web/packages/rlist/):
 
 ```r
 install.packages("rlist")
 ```
 
-or the latest development version from GitHub with
+## Motivation
 
-```r
-devtools::install_github("rlist","renkun-ken")
-```
+In R, there are numerous powerful tools to deal with structured data stored in tabular form such as data frame. However, a variety of data is non-tabular: different records may have different fields; for each field they may have different number of values. 
+
+It is hard or no longer straightforward to store such data in data frame, but the `list` object in R is flexible enough to represent such records of diversity. rlist is a toolbox to deal with non-structured data stored in `list` objects, providing a collection of high-level functions which are pipeline friendly.
 
 ## Getting started
-
-The package provides a wide range of high-level functions to work with list objects.
 
 Suppose we have a list of developers, each of whom has a name, age, a few interests, a list of programming languages they use and the number of years they have been using them.
 
@@ -58,7 +41,7 @@ devs <-
   list(
     p1=list(name="Ken",age=24,
       interest=c("reading","music","movies"),
-      lang=list(r=2,csharp=4,python=3)),
+      lang=list(r=2,csharp=4)),
     p2=list(name="James",age=25,
       interest=c("sports","music"),
       lang=list(r=3,java=2,cpp=5)),
@@ -67,16 +50,17 @@ devs <-
       lang=list(r=1,cpp=4,python=2)))
 ```
 
-This type of data is non-relational since it does not well fit the shape of a data table yet it can be easily stored in JSON or YAML format. In R, list object is powerful enough to represent a wide range of non-relational datasets like this. This package provides a wide range of functions to query this type of data.
+This type of data is non-relational since it does not well fit the shape of a data frame,  yet it can be easily stored in JSON or YAML format. In R, list objects are flexible enough to represent a wide range of non-relational datasets like this. This package provides a wide range of functions to query and manipulate this type of data.
 
-## Examples
+The following examples use `str()` to show the structure of the output.
+
+### Filtering
 
 Filter those who like music and has been using R for more than 3 years.
 
 
 ```r
-subset1 <- list.filter(devs, "music" %in% interest & lang$r >= 3)
-str(subset1)
+str( list.filter(devs, "music" %in% interest & lang$r >= 3) )
 ```
 
 ```
@@ -91,12 +75,13 @@ List of 1
   .. ..$ cpp : num 5
 ```
 
+### Selecting
+
 Select their names and ages.
 
 
 ```r
-subset2 <- list.select(devs, name, age)
-str(subset2)
+str( list.select(devs, name, age) )
 ```
 
 ```
@@ -112,12 +97,13 @@ List of 3
   ..$ age : num 24
 ```
 
+### Mapping
+
 Map each of them to the number of interests.
 
 
 ```r
-result <- list.map(devs, length(interest))
-str(result)
+str( list.map(devs, length(interest)) )
 ```
 
 ```
@@ -127,17 +113,21 @@ List of 3
  $ p3: int 2
 ```
 
+### More functions
+
+In addition to these basic functions, rlist also supports various types of grouping, joining, searching, sorting, updating, etc. For the introduction to more functionality, please go through the [rlist Tutorial](http://renkun.me/rlist-tutorial).
+
 ## Lambda expression
 
 In this package, almost all functions that work with expressions accept the following forms of lambda expressions:
 
-- Implicit lambda expression: `g(x)`
+- Implicit lambda expression: `expression`
 - Univariate lambda expressions: 
-    * `x ~ g(x)`
-    * `f(x) ~ g(x)`
+    * `x ~ expression`
+    * `f(x) ~ expression`
 - Multivariate lambda expressions:
-    * `f(x,i) ~ g(x,i)`
-    * `f(x,i,name) ~ g(x,i,name)`
+    * `f(x,i) ~ expression`
+    * `f(x,i,name) ~ expression`
 
 where `x` refers to the list member itself, `i` denotes the index, `name` denotes the name. If the symbols are not explicitly declared, `.`, `.i` and `.name` will by default be used to represent them, respectively.
 
@@ -177,8 +167,8 @@ The example above uses `pipeR`(http://renkun.me/pipeR/) package for pipeline ope
 
 
 ```r
-m <- List(devs)
-m$filter("music" %in% interest & "r" %in% names(lang))$
+ldevs <- List(devs)
+ldevs$filter("music" %in% interest & "r" %in% names(lang))$
   select(name,age)$
   stack()$
   data
@@ -189,24 +179,6 @@ m$filter("music" %in% interest & "r" %in% names(lang))$
 1   Ken  24
 2 James  25
 ```
-
-
-## Vignettes
-
-The package also provides detailed vignettes for most functions. 
-
-- [Introduction to rlist](http://cran.r-project.org/web/packages/rlist/vignettes/Introduction.html)
-- [List Mapping](http://cran.r-project.org/web/packages/rlist/vignettes/Mapping.html)
-- [List Filtering](http://cran.r-project.org/web/packages/rlist/vignettes/Filtering.html)
-- [List Sorting](http://cran.r-project.org/web/packages/rlist/vignettes/Sorting.html)
-- [List Grouping](http://cran.r-project.org/web/packages/rlist/vignettes/Grouping.html)
-- [List Joining](http://cran.r-project.org/web/packages/rlist/vignettes/Joining.html)
-- [List Updating](http://cran.r-project.org/web/packages/rlist/vignettes/Updating.html)
-- [List Searching](http://cran.r-project.org/web/packages/rlist/vignettes/Searching.html)
-- [List Input/Output](http://cran.r-project.org/web/packages/rlist/vignettes/IO.html)
-- [Lambda expressions](http://cran.r-project.org/web/packages/rlist/vignettes/Lambda.html)
-- [List environment](http://cran.r-project.org/web/packages/rlist/vignettes/List.html)
-- [Examples](http://cran.r-project.org/web/packages/rlist/vignettes/Examples.html)
 
 ## Help overview
 

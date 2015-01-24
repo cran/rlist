@@ -1,6 +1,6 @@
 #' Sample a list
 #'
-#' @param .data \code{list}
+#' @param .data A \code{list} or \code{vector}
 #' @param size \code{integer}. The size of the sample
 #' @param replace \code{logical}. Should sampling be with replacement?
 #' @param weight A lambda expression to determine the weight of
@@ -8,21 +8,16 @@
 #' is \code{NULL}.
 #' @param prob A \code{vector} of probability weights for
 #' obtaining the elements of the list being sampled.
-#' @name list.sample
 #' @export
 #' @examples
-#' \dontrun{
-#' x <- lapply(1:3,function(i) { c(a=i,b=i^2)})
-#' df <- lapply(1:3,function(i) { data.frame(a=i,b=i^2,c=letters[i])})
-#' list.rbind(x)
-#' list.rbind(df)
-#' }
-list.sample <- function(.data,size,replace=FALSE,weight=1,prob=NULL) {
+#' x <- list(a = 1, b = c(1,2,3), c = c(2,3,4))
+#' list.sample(x, 2, weight = sum(.))
+list.sample <- function(.data, size, replace = FALSE, weight = 1, prob = NULL) {
   if(is.null(prob)) {
-    ws <- unlist(list.map.internal(.data,substitute(weight),envir = parent.frame()),
+    ws <- unlist(list.map.internal(.data,substitute(weight), parent.frame()),
       use.names = FALSE)
-    if(any(ws<0)) stop("Negative weight is not allowed")
+    if(any(ws < 0)) stop("Negative weight is not allowed")
     prob <- ws / sum(ws)
   }
-  sample(.data,size,replace,prob)
+  sample(.data, size, replace, prob)
 }

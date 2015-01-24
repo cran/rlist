@@ -1,6 +1,5 @@
-#' Merge a series of lists
-#' @param ... A group of lists
-#' @name list.merge
+#' Merge a series of named lists
+#' @param ... named lists
 #' @export
 #' @examples
 #' \dontrun{
@@ -10,11 +9,8 @@
 #' list.merge(l1,l2,l3)
 #' }
 list.merge <- function(...) {
-  updates <- list(...)
-  result <- list()
-  for (update in updates) {
-    result <- modifyList(result, update)
-  }
-  result
+  lists <- list(...)
+  if(any(vapply(lists, function(x) is.null(names(x)), logical(1L))))
+    stop("All arguments must be named list", call. = FALSE)
+  reduce(modifyList, lists, list())
 }
-

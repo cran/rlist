@@ -1,23 +1,25 @@
 Package: rlist
 Type: Package
-Title: A set of tools for working with list objects
-Version: 0.3-2
+Title: A Toolbox for Non-tabular Data Manipulation
+Version: 0.4
 Author: Kun Ren <ken@renkun.me>
 Maintainer: Kun Ren <ken@renkun.me>
-Description: A set of tools for working with lists as dataset,
-    including filtering, mapping, grouping, sorting, updating,
-    searching, and many other functions. It recommends functional
-    programming and collection pipeline in list operations.
+Description: Provides a set of functions for data manipulation with
+    list objects, including mapping, filtering, grouping, sorting,
+    updating, searching, and other useful functions. Most functions
+    are designed to be pipeline friendly so that data processing with
+    lists can be chained.
 Depends: R (>= 2.15)
-Date: 2014-08-21
-Suggests: testthat, knitr, pipeR
-Imports: stringdist, data.table, yaml, jsonlite
+Date: 2015-01-24
+Suggests: testthat, data.table, stringdist, pipeR
+Imports: yaml, jsonlite
 License: MIT + file LICENSE
-URL: http://renkun.me/rlist, https://github.com/renkun-ken/rlist
+URL: http://renkun.me/rlist, https://github.com/renkun-ken/rlist,
+        http://renkun.me/rlist-tutorial
 BugReports: https://github.com/renkun-ken/rlist/issues
 ByteCompile: TRUE
-VignetteBuilder: knitr
-Packaged: 2014-08-22 03:13:34 UTC; Ken
+LazyData: true
+Packaged: 2015-01-24 13:51:18 UTC; Kun
 NeedsCompilation: no
 Repository: CRAN
-Date/Publication: 2014-08-22 07:17:34
+Date/Publication: 2015-01-24 16:41:17

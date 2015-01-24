@@ -1,9 +1,10 @@
 #' Search a list recusively by an expression
 #'
-#' @param .data \code{list}
+#' @param .data A \code{list} or \code{vector}
 #' @param expr a lambda expression
-#' @param classes a character vector of class names that restrict the search. By default, the range is unrestricted (\code{ANY}).
-#' @param n the number of results to get
+#' @param classes a character vector of class names that restrict the search.
+#' By default, the range is unrestricted (\code{ANY}).
+#' @param n the maximal number of vectors to return
 #' @param unlist \code{logical} Should the result be unlisted?
 #' @details
 #' \code{list.search} evaluates an expression (\code{expr}) recursively
@@ -24,7 +25,6 @@
 #' @name list.search
 #' @export
 #' @examples
-#' \dontrun{
 #' # Exact search
 #'
 #' x <- list(p1 = list(type="A",score=c(c1=9)),
@@ -33,25 +33,19 @@
 #'        p4 = list(type=c("B","C"),score=c(c1=8,c2=NA)))
 #'
 #' ## Search exact values
-#' list.search(x, equal("A", exactly = TRUE))
-#' list.search(x, equal(c("A","B"), exactly = TRUE))
-#' list.search(x, equal(c(9,7), exactly = TRUE))
-#' list.search(x, equal(c(c1=9,c2=7), exactly = TRUE))
+#' list.search(x, identical(., "A"))
+#' list.search(x, identical(., c("A","B")))
+#' list.search(x, identical(., c(9,7)))
+#' list.search(x, identical(., c(c1=9,c2=7)))
 #'
 #' ## Search all equal values
-#' list.search(x, all(equal(9)))
-#' list.search(x, all(equal(c(8,9))))
-#' list.search(x, all(equal(c(8,9)),na.rm = TRUE))
+#' list.search(x, all(. == 9))
+#' list.search(x, all(. == c(8,9)))
+#' list.search(x, all(. == c(8,9), na.rm = TRUE))
 #'
 #' ## Search any equal values
-#' list.search(x, any(equal(9)))
-#' list.search(x, any(equal(c(8,9))))
-#'
-#' ## Search all/any included/excluded values
-#' list.search(x, equal(9, include = TRUE))
-#' list.search(x, all(equal(c(9,10), include = TRUE)))
-#' list.search(x, any(equal(c(9,10), include = TRUE)))
-#' list.search(x, all(!equal(c(7,9,10), include = TRUE)))
+#' list.search(x, any(. == 9))
+#' list.search(x, any(. == c(8,9)))
 #'
 #' # Fuzzy search
 #'
@@ -63,11 +57,14 @@
 #'   p5 = list(name="Kwen",age=31)
 #' )
 #'
-#' list.search(data, equal("^K\\w+n$", pattern = TRUE), "character")
+#' list.search(data, grepl("^K\\w+n$", .), "character")
 #'
-#' list.search(data, equal("Ken", dist = 1), "character")
-#' list.search(data, equal("Man", dist = 2), "character")
-#' list.search(data, !equal("Man", dist = 2), "character")
+#' \dontrun{
+#' library(stringdist)
+#' list.search(data, stringdist(., "Ken") <= 1, "character")
+#' list.search(data, stringdist(., "Man") <= 2, "character")
+#' list.search(data, stringdist(., "Man") > 2, "character")
+#' }
 #'
 #' data <- list(
 #'   p1 = list(name=c("Ken", "Ren"),age=24),
@@ -76,27 +73,26 @@
 #'   p4 = list(name=c("Keynes", "Bond"),age=30),
 #'   p5 = list(name=c("Kwen", "Hu"),age=31))
 #'
-#' list.search(data, all(equal("Ken", dist = 1)), "character")
-#' list.search(data, any(equal("Ken", dist = 1)), "character")
-#' list.search(data, all(!equal("Ken", dist = 1)), "character")
-#' list.search(data, any(!equal("Ken", dist = 1)), "character")
+#' list.search(data, .[grepl("e", .)], "character")
 #'
-#' list.search(data, .[equal("e",pattern = TRUE)], "character")
+#' \dontrun{
+#' list.search(data, all(stringdist(., "Ken") <= 1), "character")
+#' list.search(data, any(stringdist(., "Ken") > 1), "character")
 #' }
-list.search <- function(.data, expr, classes = "ANY",
-  n = Inf, unlist = FALSE) {
+list.search <- function(.data, expr, classes = "ANY", n, unlist = FALSE) {
+  vec <- rapply(.data, function(x) TRUE, classes = classes)
+  if(missing(n)) n <- sum(vec)
   l <- lambda(substitute(expr))
-  counter <- as.environment(list(i = 0L))
+  args <- args_env(i = 0L, n = 0L, N = n,
+    indices = integer(n), result = vector("list", n))
   fun <- list.search.fun
   environment(fun) <- parent.frame()
   formals(fun) <- setnames(formals(fun),
-    c(".data",".expr",".counter",".n",l$symbols))
-  results <- rapply(.data, fun, classes = classes,
-    how = if(unlist) "unlist" else "list",
-    .expr = l$expr, .counter = counter, .n = n)
-  if(!unlist) {
-    results <- list.clean(results,
-      fun = is.empty, recursive = TRUE)
-  }
-  results
+    c(".data",".expr",".args", ".n", l$symbols))
+  try(rapply(.data, fun, classes = classes,
+    .expr = l$expr, .args = args), silent = TRUE)
+  result <- list.clean(args$result, is.null, recursive = FALSE)
+  names(result) <- names(vec)[args$indices]
+  if(unlist) result <- unlist(result)
+  result
 }

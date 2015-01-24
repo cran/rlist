@@ -5,7 +5,7 @@
 #' @param type The type of serialization, including native serializer and
 #'    json serializer, which is by default determined by file extension
 #' @param ... Additional parameters passed to the serializer function
-#' @name list.serialize
+#' @seealso \code{\link{list.unserialize}}
 #' @export
 #' @examples
 #' \dontrun{
@@ -13,13 +13,13 @@
 #' list.serialize(x,"test.dat")
 #' list.serialize(x,"test.json")
 #' }
-list.serialize <- function(x,file,type=tolower(tools::file_ext(file)),...) {
-  fun <- paste("list.serialize",type,sep = ".")
-  if(existsFunction(fun)) {
-    fun <- get(fun,mode = "function")
-    fun(x,file,...)
+list.serialize <- function(x, file, type = tools::file_ext(file), ...) {
+  fun <- paste("list.serialize", tolower(type), sep = ".")
+  if(exists(fun, mode = "function")) {
+    fun <- get(fun, mode = "function")
+    fun(x, file, ...)
   } else {
-    conn <- file(file,open="w")
+    conn <- file(file, open="w")
     serialize(x,conn)
     close(conn)
   }

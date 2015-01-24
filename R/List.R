@@ -1,20 +1,19 @@
-# compatibility for data.table functions
-.datatable.aware <- TRUE
-
 createListClosure <- function(f, data) {
+  f <- substitute(f)
   function(...) {
-    dots <- match.call(expand.dots = FALSE)$`...`
-    rcall <- as.call(c(f,quote(data),dots))
-    data <- eval(rcall,list(data = data),parent.frame())
+    dots <- match.call(expand.dots = FALSE)$...
+    rcall <- as.call(c(f, quote(data), dots))
+    data <- eval(rcall, list(data = data), parent.frame())
     List(data)
   }
 }
 
 createCallClosure <- function(data) {
   function(f, ...) {
-    dots <- match.call(expand.dots = FALSE)$`...`
-    rcall <- as.call(c(f,quote(data),dots))
-    data <- eval(rcall,list(data = data),parent.frame())
+    f <- substitute(f)
+    dots <- match.call(expand.dots = FALSE)$...
+    rcall <- as.call(c(f, quote(data), dots))
+    data <- eval(rcall, list(data = data), parent.frame())
     List(data)
   }
 }
@@ -22,8 +21,7 @@ createCallClosure <- function(data) {
 #' Create a \code{List environment} that wraps given \code{data} and
 #' most list functions are defined for chainable operations.
 #'
-#' @param data \code{list}
-#' @name List
+#' @param data A \code{list} or \code{vector}
 #' @export
 #' @details
 #' Most list functions are defined in \code{List environment}.
@@ -35,7 +33,6 @@ createCallClosure <- function(data) {
 #' \code{x[]}.
 #'
 #' @examples
-#' \dontrun{
 #' x <- list(p1 = list(type="A",score=list(c1=10,c2=8)),
 #'        p2 = list(type="B",score=list(c1=9,c2=9)),
 #'        p3 = list(type="B",score=list(c1=9,c2=7)))
@@ -44,7 +41,7 @@ createCallClosure <- function(data) {
 #'   map(score$c1) []
 #'
 #' m$group(type)$
-#'   map(g -> List(g)$
+#'   map(g ~ List(g)$
 #'       map(score)$
 #'       call(unlist)$
 #'       call(mean) []) []
@@ -57,7 +54,6 @@ createCallClosure <- function(data) {
 #' p$a <- 2
 #' p["b"] <- NULL
 #' p[["a"]] <- 3
-#' }
 List <- function(data = list()) {
   call <- createCallClosure(data)
 
@@ -77,17 +73,20 @@ List <- function(data = list()) {
   filter <- createListClosure(list.filter, data)
   find <- createListClosure(list.find, data)
   findi <- createListClosure(list.findi, data)
+  first <- createListClosure(list.first, data)
   flatten <- createListClosure(list.flatten, data)
   group <- createListClosure(list.group, data)
   is <- createListClosure(list.is, data)
   insert <- createListClosure(list.insert, data)
   iter <- createListClosure(list.iter, data)
   join <- createListClosure(list.join, data)
+  last <- createListClosure(list.last, data)
   load <- createListClosure(list.load, data)
   map <- createListClosure(list.map, data)
   mapv <- createListClosure(list.mapv, data)
   match <- createListClosure(list.match, data)
   merge <- createListClosure(list.merge, data)
+  names <- createListClosure(list.names, data)
   order <- createListClosure(list.order, data)
   parse <- createListClosure(list.parse, data)
   prepend <- createListClosure(list.prepend, data)
@@ -112,7 +111,6 @@ List <- function(data = list()) {
   which <- createListClosure(list.which, data)
   zip <- createListClosure(list.zip, data)
   subset <- createListClosure(list.subset, data)
-  summary <- createListClosure(summary, data)
 
   envir <- environment()
   setclass(envir, c("List","environment"))
@@ -151,57 +149,48 @@ ndots <- function(dots) {
   length(dots) >= 1L && any(nzchar(dots))
 }
 
-List.get <- function(f, data, dots, envir) {
-  rcall <- as.call(c(f,quote(data),dots))
-  eval(rcall,list(data = data),envir)
+List_get <- function(f, data, dots, envir) {
+  if(!ndots(dots)) return(data)
+  rcall <- as.call(c(f, quote(data), dots))
+  data <- eval(rcall,list(data = data),envir)
+  List(data)
 }
 
-#' @export
-`[.List` <- function(x, ...) {
-  dots <- match.call(expand.dots = FALSE)$`...`
-  if(ndots(dots)) {
-    data <- List.get(`[`,x$data,dots,parent.frame())
-    List(data)
+List_get_function <- function(op) {
+  op <- as.symbol(op)
+  function(x, ...) {
+    dots <- match.call(expand.dots = FALSE)$...
+    List_get(op, x$data, dots, parent.frame())
   }
-  else x$data
 }
 
 #' @export
-`[[.List` <- function(x, ...) {
-  dots <- match.call(expand.dots = FALSE)$`...`
-  if(ndots(dots)) {
-    data <- List.get(`[[`,x$data,dots,parent.frame())
-    List(data)
+`[.List` <- List_get_function("[")
+
+#' @export
+`[[.List` <- List_get_function("[[")
+
+
+List_set <- function(f, x, dots, value, envir) {
+  if(!ndots(dots)) return(value)
+  rcall <- as.call(c(f, quote(x), dots, quote(value)))
+  data <- eval(rcall,list(x = x, value = value),envir)
+  List(data)
+}
+
+List_set_function <- function(op) {
+  op <- as.symbol(op)
+  function(x, ..., value) {
+    dots <- match.call(expand.dots = FALSE)$...
+    List_set(op, x$data, dots, value, parent.frame())
   }
-  else x$data
-}
-
-
-List.set <- function(f, x, dots, value, envir) {
-  rcall <- as.call(c(f,quote(x),dots,quote(value)))
-  eval(rcall,list(x = x, value = value),envir)
 }
 
 #' @export
-`$<-.List` <- function(x,...,value) {
-  dots <- match.call(expand.dots = FALSE)$`...`
-  if(ndots(dots))
-    value <- List.set(`$<-`, x$data, dots, value, parent.frame())
-  List(value)
-}
+`$<-.List` <- List_set_function("$<-")
 
 #' @export
-`[<-.List` <- function(x,...,value) {
-  dots <- match.call(expand.dots = FALSE)$`...`
-  if(ndots(dots))
-    value <- List.set(`[<-`, x$data, dots, value, parent.frame())
-  List(value)
-}
+`[<-.List` <- List_set_function("[<-")
 
 #' @export
-`[[<-.List` <- function(x,...,value) {
-  dots <- match.call(expand.dots = FALSE)$`...`
-  if(ndots(dots))
-    value <- List.set(`[[<-`, x$data, dots, value, parent.frame())
-  List(value)
-}
+`[[<-.List` <- List_set_function("[[<-")

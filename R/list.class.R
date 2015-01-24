@@ -1,13 +1,11 @@
-#' Classify list members into unique cases evaluated by given expression.
+#' Classify list elments into unique cases evaluated by given expression.
 #'
-#' @param .data \code{list}
-#' @param expr A lambda expression
-#' @param ... Additional parameters passed to \code{unique}
-#' @param sort.cases \code{logical}. if \code{TRUE} the cases will be sorted in ascending order.
-#' @name list.class
+#' @param .data A \code{list} or \code{vector}
+#' @param ... keys
+#' @param sorted \code{TRUE} to sort the group keys. Ignored when the key has
+#' multiple entries.
 #' @export
 #' @examples
-#' \dontrun{
 #' x <-
 #'   list(
 #'     p1=list(name="Ken",age=24,
@@ -21,13 +19,7 @@
 #'       lang=list(r=1,cpp=4,python=2)))
 #' list.class(x,interest)
 #' list.class(x,names(lang))
-#' }
-list.class <- function(.data,expr,...,sort.cases=TRUE) {
-  values <- list.map.internal(.data,substitute(expr),envir = parent.frame())
-  cases <- unique(unlist(values,use.names = FALSE),...)
-  names(cases) <- cases
-  if(sort.cases)  cases <- sort(cases)
-  lapply(cases,function(case) {
-    .data[vapply(values,function(vi) case %in% vi,logical(1L))]
-  })
+list.class <- function(.data, ..., sorted = TRUE) {
+  list.group.internal(.data, dots(...), parent.frame(),
+    proc = "unlist", compare = "contains", sorted = sorted)
 }
