@@ -2,13 +2,15 @@
 
 # rlist
 
-[![Build Status](https://travis-ci.org/renkun-ken/rlist.png?branch=master)](https://travis-ci.org/renkun-ken/rlist) [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/renkun-ken/rlist?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Build Status](https://travis-ci.org/renkun-ken/rlist.png?branch=master)](https://travis-ci.org/renkun-ken/rlist) [![Coverage Status](https://coveralls.io/repos/renkun-ken/rlist/badge.svg)](https://coveralls.io/r/renkun-ken/rlist) [![CRAN Version](http://www.r-pkg.org/badges/version/rlist)](http://cran.rstudio.com/web/packages/rlist)
 
 rlist is a set of tools for working with list objects. Its goal is to make it easier to work with lists by providing a wide range of functions that operate on non-tabular data stored in them.
 
 This package supports list mapping, filtering, grouping, sorting, updating, searching, file input/output, and many other functions. Most functions in the package are designed to be pipeline friendly so that data processing with lists can be chained.
 
 **[rlist Tutorial](http://renkun.me/rlist-tutorial) is a highly recommended complete guide to rlist.**
+
+This document is also translated into  [日本語](https://github.com/renkun-ken/rlist/blob/master/README.ja.md) (by [@teramonagi](https://github.com/teramonagi)).
 
 ## Installation
 

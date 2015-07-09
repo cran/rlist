@@ -1,13 +1,13 @@
-#' Flatten a list to only one level
+#' Flatten a nested list to a one-level list
 #'
 #' @param x \code{list}
 #' @param use.names \code{logical}. Should the names of \code{x} be kept?
 #' @export
 #' @examples
-#' p <- list(a=1,b=list(b1=2,b2=3),c=list(c1=list(c11="a",c12="x"),c2=3))
+#' p <- list(a=1,b=list(b1=2,b2=3),c=list(c1=list(c11='a',c12='x'),c2=3))
 #' list.flatten(p)
-list.flatten <- function(x,use.names=TRUE) {
-  len <- sum(rapply(x, function(x) TRUE))
+list.flatten <- function(x, use.names = TRUE) {
+  len <- sum(rapply(x, function(x) 1L))
   y <- vector("list", len)
   i <- 0L
   items <- rapply(x, function(x) {
@@ -15,6 +15,7 @@ list.flatten <- function(x,use.names=TRUE) {
     y[[i]] <<- x
     TRUE
   })
-  if(use.names) names(y) <- names(items)
+  if (use.names)
+    names(y) <- names(items)
   y
 }

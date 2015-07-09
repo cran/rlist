@@ -33,11 +33,11 @@ createCallClosure <- function(data) {
 #' \code{x[]}.
 #'
 #' @examples
-#' x <- list(p1 = list(type="A",score=list(c1=10,c2=8)),
-#'        p2 = list(type="B",score=list(c1=9,c2=9)),
-#'        p3 = list(type="B",score=list(c1=9,c2=7)))
+#' x <- list(p1 = list(type='A',score=list(c1=10,c2=8)),
+#'        p2 = list(type='B',score=list(c1=9,c2=9)),
+#'        p3 = list(type='B',score=list(c1=9,c2=7)))
 #' m <- List(x)
-#' m$filter(type=="B")$
+#' m$filter(type=='B')$
 #'   map(score$c1) []
 #'
 #' m$group(type)$
@@ -49,11 +49,11 @@ createCallClosure <- function(data) {
 #' # Subsetting, extracting, and assigning
 #'
 #' p <- List(list(a=1,b=2))
-#' p["a"]
-#' p[["a"]]
+#' p['a']
+#' p[['a']]
 #' p$a <- 2
-#' p["b"] <- NULL
-#' p[["a"]] <- 3
+#' p['b'] <- NULL
+#' p[['a']] <- 3
 List <- function(data = list()) {
   call <- createCallClosure(data)
 
@@ -107,42 +107,46 @@ List <- function(data = list()) {
   takeWhile <- createListClosure(list.takeWhile, data)
   ungroup <- createListClosure(list.ungroup, data)
   unserialize <- createListClosure(list.unserialize, data)
+  upzip <- createListClosure(list.unzip, data)
   update <- createListClosure(list.update, data)
   which <- createListClosure(list.which, data)
   zip <- createListClosure(list.zip, data)
   subset <- createListClosure(list.subset, data)
 
   envir <- environment()
-  setclass(envir, c("List","environment"))
+  setclass(envir, c("List", "environment"))
 }
 
 #' @export
-print.List <- function(x,...,header = getOption("List.header", TRUE)) {
-  if(!is.null(x$data)) {
-    if(header) cat("$data :",class(x$data),"\n------\n")
-    print(x$data,...)
+print.List <- function(x, ..., header = getOption("List.header", TRUE)) {
+  if (!is.null(x$data)) {
+    if (header)
+      cat("$data :", class(x$data), "\n------\n")
+    print(x$data, ...)
   }
 }
 
+#' @importFrom utils str
 #' @export
-str.List <- function(object,...,header = getOption("List.header", TRUE)) {
-  if(header) cat("$data : ")
-  str(object$data,...)
+str.List <- function(object, ..., header = getOption("List.header", TRUE)) {
+  if (header)
+    cat("$data : ")
+  str(object$data, ...)
 }
 
 #' @export
-summary.List <- function(object,...) {
-  summary(object$data,...)
+summary.List <- function(object, ...) {
+  summary(object$data, ...)
 }
 
 #' @export
-`==.List` <- function(e1,e2) {
+`==.List` <- function(e1, e2) {
   e1$data == e2
 }
 
 #' @export
-subset.List <- function(x,...) {
-  subset(x$data,...)
+subset.List <- function(x, ...) {
+  subset(x$data, ...)
 }
 
 ndots <- function(dots) {
@@ -150,9 +154,10 @@ ndots <- function(dots) {
 }
 
 List_get <- function(f, data, dots, envir) {
-  if(!ndots(dots)) return(data)
+  if (!ndots(dots))
+    return(data)
   rcall <- as.call(c(f, quote(data), dots))
-  data <- eval(rcall,list(data = data),envir)
+  data <- eval(rcall, list(data = data), envir)
   List(data)
 }
 
@@ -172,9 +177,10 @@ List_get_function <- function(op) {
 
 
 List_set <- function(f, x, dots, value, envir) {
-  if(!ndots(dots)) return(value)
+  if (!ndots(dots))
+    return(value)
   rcall <- as.call(c(f, quote(x), dots, quote(value)))
-  data <- eval(rcall,list(x = x, value = value),envir)
+  data <- eval(rcall, list(x = x, value = value), envir)
   List(data)
 }
 
