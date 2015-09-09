@@ -168,9 +168,11 @@ test_that("list.takeWhile, list.skipWhile", {
   expect_identical(list.takeWhile(x, . <= 1), x[1])
   expect_equal(length(list.takeWhile(x, . >= 3)), 0)
   lapply(1:3, function(i) list.takeWhile(x, . <= i))
+  expect_error(list.takeWhile(x, . >= p))
   expect_identical(list.skipWhile(x, . <= 1), x[2])
   expect_equal(length(list.skipWhile(x, . >= 3)), 0)
   lapply(1:3, function(i) list.skipWhile(x, . <= i))
+  expect_error(list.skipWhile(x, . >= p))
 })
 
 test_that("list.remove", {
@@ -224,7 +226,7 @@ test_that("list.all", {
     c2 = 7)))
   expect_equal(list.all(x, type == "B"), FALSE)
   expect_equal(list.all(x, mean(unlist(score)) >= 6), TRUE)
-  expect_equal(sapply(8:10, function(i) list.all(x, score$c1 >= i)), c(T, T, F))
+  expect_equal(sapply(8:10, function(i) list.all(x, score$c1 >= i)), c(TRUE, TRUE, FALSE))
   expect_equal(list.all(logical()), all())
   expect_equal(list.all(logical(), na.rm = TRUE), all(na.rm = TRUE))
   expect_equal(list.all(c(TRUE, NA, TRUE)), all(c(TRUE, NA, TRUE)))
@@ -234,6 +236,9 @@ test_that("list.all", {
   expect_equal(list.all(c(TRUE, NA, FALSE), na.rm = TRUE), all(c(TRUE, NA, FALSE),
     na.rm = TRUE))
   expect_equal(list.all(list(c(1,2,3),c(2,3,4)), . <= 3, na.rm = FALSE), NA)
+  expect_equal(list.all(list(1,-2,10), x ~ x > 0), FALSE)
+  expect_equal(list.all(list(1,-2,10), x ~ x + 10 > 0), TRUE)
+  expect_error(list.all(list(1,2,3), . > p))
 })
 
 test_that("list.any", {
@@ -251,6 +256,9 @@ test_that("list.any", {
     na.rm = TRUE))
   expect_equal(list.any(c(TRUE, NA, FALSE), na.rm = TRUE), any(c(TRUE, NA, FALSE),
     na.rm = TRUE))
+  expect_equal(list.any(list(1,-2,10), x ~ x > 0), TRUE)
+  expect_equal(list.any(list(1,-2,10), x ~ x - 10 > 0), FALSE)
+  expect_error(list.any(list(1,2,3), . > p))
 })
 
 test_that("list.first", {
@@ -261,6 +269,7 @@ test_that("list.first", {
   expect_equal(list.first(x, unlist(score$c1 <= 9)), x[[2L]])
   expect_identical(list.first(x, score$c1 < 9 || score$c3 >= 5), NULL)
   expect_equal(list.first(c(NA, NA, 1), . <= 1), 1)
+  expect_error(list.first(list(1,2,3), . > p))
 })
 
 test_that("list.last", {
@@ -270,6 +279,7 @@ test_that("list.last", {
   expect_equal(list.last(x, type == "B"), x[[3L]])
   expect_equal(list.last(x, unlist(score$c1 <= 9)), x[[3L]])
   expect_identical(list.last(x, score$c1 < 9 || score$c3 >= 5), NULL)
+  expect_error(list.last(list(1,2,3), . > p))
 })
 
 test_that("list.table", {
@@ -309,6 +319,13 @@ test_that("list.flatten", {
   expect_identical(list.flatten(p), list(a = 1, b.b1 = 2, b.b2 = 3, c.c1.c11 = "a",
     c.c1.c12 = "x", c.c2 = 3))
   expect_identical(list.flatten(q), list(a = c(1, 2, 3), b.x = 1, b.y.z = 1, b.y.z2 = 2))
+
+  p <- list(a=1,b=list(x="a",y="b",z=10))
+  expect_identical(list.flatten(p), list(a=1, b.x = "a", b.y = "b", b.z = 10))
+  expect_identical(list.flatten(p, classes = "numeric"), list(a = 1, b.z = 10))
+  expect_identical(list.flatten(p, classes = "character"), list(b.x = "a", b.y = "b"))
+  expect_identical(list.flatten(p, classes = "integer"), list())
+  expect_identical(list.flatten(p, use.names = FALSE), list(1, "a", "b", 10))
 })
 
 test_that("list.names", {

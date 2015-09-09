@@ -1,7 +1,7 @@
 Package: rlist
 Type: Package
 Title: A Toolbox for Non-Tabular Data Manipulation
-Version: 0.4.2.3
+Version: 0.4.5.1
 Author: Kun Ren <ken@renkun.me>
 Maintainer: Kun Ren <ken@renkun.me>
 Description: Provides a set of functions for data manipulation with
@@ -10,7 +10,7 @@ Description: Provides a set of functions for data manipulation with
     are designed to be pipeline friendly so that data processing with
     lists can be chained.
 Depends: R (>= 2.15)
-Date: 2015-07-08
+Date: 2015-09-07
 Suggests: testthat, stringdist, pipeR
 Imports: yaml, jsonlite, XML, data.table
 License: MIT + file LICENSE
@@ -20,6 +20,6 @@ BugReports: https://github.com/renkun-ken/rlist/issues
 ByteCompile: TRUE
 LazyData: true
 NeedsCompilation: no
-Packaged: 2015-07-09 00:31:18 UTC; Kun
+Packaged: 2015-09-09 02:49:20 UTC; Kun
 Repository: CRAN
-Date/Publication: 2015-07-09 14:47:56
+Date/Publication: 2015-09-09 09:17:19
