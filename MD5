@@ -1,9 +1,9 @@
-ffb9a1d9facfdc18433f7fb9ebb3adb3 *DESCRIPTION
+41b217ef1764c0895cff1f944199691e *DESCRIPTION
 a4c33df13d06112959c410208abc57a2 *LICENSE
 b53c4a4f2ed2efa3dc5e280bb0a92fce *NAMESPACE
 a7dfd526bddf8bf1e9e37567accd449c *NEWS
 6a8ddd1536ec1b109c2a20e7566d1de3 *R/List.R
-1ffd9c3296381117fbbdc9d58930f72d *R/data.R
+19e66c5edb711338ae836abbf32eaaf2 *R/data.R
 82d8c71be71fab7133b934a8be60be25 *R/functions.R
 2371c6de75ae2d09058d4f2a022ea338 *R/internal.R
 82a6df4939fe35769a555cc869ee7bcd *R/lambda.R
@@ -47,7 +47,7 @@ a92c928cd557ab8ea7d7d7e16708c04b *R/list.which.R
 f53f8f70404ddfb2b83bb850c96f92e8 *R/rlist.R
 ce56f2a354e4c168e66d840d88d1a8a4 *R/subset.list.R
 5ab1934cf580dcac4013d2805d740eb1 *R/utils.R
-742553db220b3faa91504ed16caeded1 *README.md
+c7c00a20e25fce3f33411897b026548c *README.md
 ee6b654954dc06fd53ba6a6fec4dce85 *data/nyweather.rda
 cdc9465e211f80118ba2493ced046d7a *man/List.Rd
 64ced205c7b5e16ff360b01767404150 *man/list.all.Rd
@@ -107,7 +107,7 @@ f17377a65f3c4ad6662ea9e781cba09d *man/list.stack.Rd
 2d75d11401eb623e37f6ac719a7914d6 *man/list.update.Rd
 ae4f6841964163ed2cd7b5df63d84ba8 *man/list.which.Rd
 44ac2b52651d1936aaa3bf513a484728 *man/list.zip.Rd
-6e372537dda210274e1e232d6efa12af *man/nyweather.Rd
+71b162b6da088bdcba6d80f432072773 *man/nyweather.Rd
 8aae061e460a3ac7d2ed3e1ac99b1ea6 *man/rlist-package.Rd
 abd0aec3648ea3d8d5fd5c72b90a99cb *man/subset.list.Rd
 1e8b1c56b76e8c52c7db4752894e2154 *man/tryEval.Rd
@@ -116,9 +116,9 @@ abd0aec3648ea3d8d5fd5c72b90a99cb *man/subset.list.Rd
 fab9264304142f0e880270471055c50b *tests/testthat/test-List.R
 9404fc82f65429df00dcb3a3a487cbec *tests/testthat/test-basic.R
 3312b1af9f652c532cc40a4f9f1059d5 *tests/testthat/test-class.R
-8c9f74577696c9740ca82799fb850ebe *tests/testthat/test-filter.R
+8259b58b4326274e2a0decfd4ef3bfb0 *tests/testthat/test-filter.R
 6239e8f07a4b00bdb818b3c702d894ed *tests/testthat/test-find.R
-ff450fbf24e1711b7b7b9aaacfd396c2 *tests/testthat/test-group.R
+a23b934b5f6c853bb09fe00393657e0d *tests/testthat/test-group.R
 916587318fb3be81f443a878e0d5a731 *tests/testthat/test-internal.R
 3e093c7f22c55e29ed7443e2ab81327c *tests/testthat/test-io.R
 3a2cac4dec7fc1647c807f073d349064 *tests/testthat/test-join.R
